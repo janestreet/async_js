@@ -122,9 +122,17 @@ let client
   let address =
     match address with
     | None ->
+      let port =
+        match Url.Current.port with
+        | Some port -> port
+        | None ->
+          if Url.Current.protocol = "https:"
+          then Url.default_https_port
+          else Url.default_http_port
+      in
       Host_and_port.create
         ~host:Url.Current.host
-        ~port:(Option.value Url.Current.port ~default:80)
+        ~port
     | Some x -> x
   in
   let pipe_reader,pipe_writer = pipe_of_websocket address in

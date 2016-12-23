@@ -6,4 +6,4 @@
               async_rpc_kernel
               ))
   (js_of_ocaml ())
-  (preprocess (pps (ppx_jane.kernel js_of_ocaml.ppx.driver)))))
+  (preprocess (pps (ppx_jane js_of_ocaml.ppx.driver)))))
