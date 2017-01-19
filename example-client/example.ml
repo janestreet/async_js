@@ -2,7 +2,7 @@ open Core_kernel.Std
 open Async_kernel.Std
 open Async_js
 open Js_of_ocaml
-open Virtual_dom.Std
+open Virtual_dom
 
 let set ~key ~value =
   Deferred.map ~f:(fun res ->
