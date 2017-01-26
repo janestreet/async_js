@@ -1,4 +1,4 @@
-open Core.Std
+open Core
 open Async.Std
 open Cohttp_async_lib.Std
 open Ocaml_uri
