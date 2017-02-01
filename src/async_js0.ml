@@ -1,4 +1,4 @@
-open Core_kernel.Std
+open Core_kernel
 
 module Time_ns = Core_kernel.Time_ns
 module Clock_ns = Async_kernel.Clock_ns

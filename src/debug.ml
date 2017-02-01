@@ -1,5 +1,5 @@
 open Js_of_ocaml
-open Core_kernel.Std
+open Core_kernel
 
 let is_valid_id s =
   if s = ""

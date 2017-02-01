@@ -1,4 +1,4 @@
-open Core_kernel.Std
+open Core_kernel
 open Js_of_ocaml
 
 (** Output a [Sexp.t] value to the console, e.g. via the message extensions:
