@@ -2,7 +2,7 @@ open Core_kernel
 
 module Time_ns = Core_kernel.Time_ns
 module Clock_ns = Async_kernel.Clock_ns
-module Scheduler = Async_kernel.Scheduler
+module Scheduler = Async_kernel.Async_kernel_private.Scheduler
 open Js_of_ocaml
 
 let sleep d = Clock_ns.after (Time_ns.Span.of_sec d)
@@ -111,7 +111,8 @@ let initialization = lazy (
   Scheduler.set_job_queued_hook t (fun _ -> run ());
   Scheduler.set_event_added_hook t (fun _ -> run ());
   Scheduler.set_thread_safe_external_job_hook t run;
-  Async_kernel.Monitor0.try_with_log_exn := log "Async_kernel: Monitor.try_with";
+  Async_kernel.Async_kernel_private.Monitor0.try_with_log_exn :=
+    log "Async_kernel: Monitor.try_with";
   Async_kernel.Monitor.detach_and_iter_errors
     Async_kernel.Monitor.main ~f:(log "Async_kernel: Unhandled exception");
   run ()

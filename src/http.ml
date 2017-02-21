@@ -1,5 +1,5 @@
 open Core_kernel
-open Async_kernel.Std
+open Async_kernel
 open Js_of_ocaml
 
 module Opt = Js.Opt
