@@ -11,10 +11,11 @@ build: [
 depends: [
   "async_kernel"
   "async_rpc_kernel"
-  "jbuilder"
+  "jbuilder"                {build}
   "ppx_driver"
   "ppx_jane"
   "js_of_ocaml"
+  "ocaml-migrate-parsetree"
 ]
 available: [ ocaml-version >= "4.03.0" ]
 descr: "
