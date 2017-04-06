@@ -2,19 +2,19 @@ open Core_kernel
 open Async_kernel
 open Import
 
-module Any             = Rpc_kernel.Any
-module Description     = Rpc_kernel.Description
-module Implementation  = Rpc_kernel.Implementation
-module Implementations = Rpc_kernel.Implementations
-module One_way         = Rpc_kernel.One_way
-module Pipe_rpc        = Rpc_kernel.Pipe_rpc
-module Rpc             = Rpc_kernel.Rpc
-module State_rpc       = Rpc_kernel.State_rpc
+module Any             = Rpc_kernel.Rpc.Any
+module Description     = Rpc_kernel.Rpc.Description
+module Implementation  = Rpc_kernel.Rpc.Implementation
+module Implementations = Rpc_kernel.Rpc.Implementations
+module One_way         = Rpc_kernel.Rpc.One_way
+module Pipe_rpc        = Rpc_kernel.Rpc.Pipe_rpc
+module Rpc             = Rpc_kernel.Rpc.Rpc
+module State_rpc       = Rpc_kernel.Rpc.State_rpc
 
-module Pipe_close_reason = Rpc_kernel.Pipe_close_reason
+module Pipe_close_reason = Rpc_kernel.Rpc.Pipe_close_reason
 
 module Connection : sig
-  include module type of struct include Rpc_kernel.Connection end
+  include module type of struct include Rpc_kernel.Rpc.Connection end
 
   type ('a, 's) client_t
     = ?address           : Host_and_port.t (* Default: host and port of the current page *)

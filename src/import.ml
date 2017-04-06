@@ -1,1 +1,1 @@
-module Rpc_kernel    = Async_rpc_kernel.Std.Rpc
+module Rpc_kernel = Async_rpc_kernel

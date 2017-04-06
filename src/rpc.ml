@@ -3,20 +3,20 @@ open Async_kernel
 open Js_of_ocaml
 open Import
 
-module Pipe_transport  = Async_rpc_kernel.Std.Pipe_transport
-module Any             = Rpc_kernel.Any
-module Description     = Rpc_kernel.Description
-module Implementation  = Rpc_kernel.Implementation
-module Implementations = Rpc_kernel.Implementations
-module One_way         = Rpc_kernel.One_way
-module Pipe_rpc        = Rpc_kernel.Pipe_rpc
-module Rpc             = Rpc_kernel.Rpc
-module State_rpc       = Rpc_kernel.State_rpc
+module Pipe_transport  = Rpc_kernel.Pipe_transport
+module Any             = Rpc_kernel.Rpc.Any
+module Description     = Rpc_kernel.Rpc.Description
+module Implementation  = Rpc_kernel.Rpc.Implementation
+module Implementations = Rpc_kernel.Rpc.Implementations
+module One_way         = Rpc_kernel.Rpc.One_way
+module Pipe_rpc        = Rpc_kernel.Rpc.Pipe_rpc
+module Rpc             = Rpc_kernel.Rpc.Rpc
+module State_rpc       = Rpc_kernel.Rpc.State_rpc
 
-module Pipe_close_reason = Rpc_kernel.Pipe_close_reason
+module Pipe_close_reason = Rpc_kernel.Rpc.Pipe_close_reason
 
 module Connection = struct
-  include Rpc_kernel.Connection
+  include Rpc_kernel.Rpc.Connection
 
   type ('a, 's) client_t
     =  ?address          : Host_and_port.t
@@ -147,7 +147,6 @@ module Connection = struct
       | Some desc -> Info.tag_arg desc "via WS" address Host_and_port.sexp_of_t
     in
     let transport = Pipe_transport.create Pipe_transport.Kind.bigstring pipe_reader pipe_writer in
-    let handshake_timeout = Async_rpc_kernel.Connection.default_handshake_timeout in
     begin
       match implementations with
       | None ->
@@ -156,7 +155,6 @@ module Connection = struct
         in
         create
           transport
-          ~handshake_timeout
           ?heartbeat_config
           ~implementations
           ~description
@@ -164,7 +162,6 @@ module Connection = struct
       | Some { Client_implementations. connection_state; implementations } ->
         create
           transport
-          ~handshake_timeout
           ?heartbeat_config
           ~implementations
           ~description
@@ -174,7 +171,7 @@ module Connection = struct
     | Ok connection ->
       return (Ok connection)
     | Error exn ->
-      Async_rpc_kernel.Transport.close transport
+      Async_rpc_kernel.Rpc.Transport.close transport
       >>| fun () ->
       Error (Error.of_exn exn)
 
