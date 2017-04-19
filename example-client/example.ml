@@ -76,14 +76,14 @@ let update u state =
   | New_value v ->
     { state with value = v }
   | Set_value ->
-    Js.Opt.iter (Dom_html.(CoerceTo.input (getElementById "entry")))
-      (fun input ->
-         let value = Js.to_string input##.value in
-         don't_wait_for (
-           set ~key:state.key ~value
-           >>| fun () ->
-           Pipe.write_without_pushback event_writer (New_value value)
-         )
+    Option.iter (Dom_html.getElementById_coerce "entry" Dom_html.CoerceTo.input)
+      ~f:(fun input ->
+        let value = Js.to_string input##.value in
+        don't_wait_for (
+          set ~key:state.key ~value
+          >>| fun () ->
+          Pipe.write_without_pushback event_writer (New_value value)
+        )
       );
     state
 ;;
