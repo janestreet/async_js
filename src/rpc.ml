@@ -1,6 +1,7 @@
 open Core_kernel
 open Async_kernel
 open Js_of_ocaml
+open Ocaml_uri
 open Import
 
 module Pipe_transport  = Rpc_kernel.Pipe_transport
@@ -18,13 +19,12 @@ module Pipe_close_reason = Rpc_kernel.Rpc.Pipe_close_reason
 module Connection = struct
   include Rpc_kernel.Rpc.Connection
 
-  type ('a, 's) client_t
-    =  ?address          : Host_and_port.t
+  type ('rest, 'implementations) client_t
+    =  ?uri              : Uri.t
     -> ?heartbeat_config : Heartbeat_config.t
     -> ?description      : Info.t
-    -> ?implementations  : 's Client_implementations.t
-    -> unit
-    -> 'a Deferred.t
+    -> ?implementations  : 'implementations Client_implementations.t
+    -> 'rest
 
   (* https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent *)
   let string_of_error_code = function
@@ -45,8 +45,8 @@ module Connection = struct
     | code -> sprintf "Unknown CloseEvent code: %d" code
 
 
-  let pipe_of_websocket address =
-    let url =  sprintf "ws://%s/" (Host_and_port.to_string address) in
+  let pipe_of_websocket url =
+    let url = Uri.to_string url in
     let ws = new%js WebSockets.webSocket (Js.string url) in
     let reader_r, reader_w = Pipe.create () in
     let writer_r, writer_w = Pipe.create () in
@@ -120,14 +120,21 @@ module Connection = struct
     reader_r, writer_w
 
   let client
-        ?address
+        ?uri
         ?heartbeat_config
         ?description
         ?implementations
-        () =
-    let address =
-      match address with
+        ()
+    =
+    let uri =
+      match uri with
+      | Some uri -> uri
       | None ->
+        let scheme =
+          if Url.Current.protocol = "https:"
+          then "wss"
+          else "ws"
+        in
         let port =
           match Url.Current.port with
           | Some port -> port
@@ -136,15 +143,13 @@ module Connection = struct
             then Url.default_https_port
             else Url.default_http_port
         in
-        Host_and_port.create
-          ~host:Url.Current.host
-          ~port
-      | Some x -> x
+        let host = Url.Current.host in
+        Uri.make ~scheme ~host ~port ()
     in
-    let pipe_reader,pipe_writer = pipe_of_websocket address in
+    let pipe_reader,pipe_writer = pipe_of_websocket uri in
     let description = match description with
-      | None -> Info.create "Client connected via WS" address Host_and_port.sexp_of_t
-      | Some desc -> Info.tag_arg desc "via WS" address Host_and_port.sexp_of_t
+      | None -> Info.create "Client connected via WS" uri Uri.sexp_of_t
+      | Some desc -> Info.tag_arg desc "via WS" uri Uri.sexp_of_t
     in
     let transport = Pipe_transport.create Pipe_transport.Kind.bigstring pipe_reader pipe_writer in
     begin
@@ -176,11 +181,17 @@ module Connection = struct
       Error (Error.of_exn exn)
 
   let client_exn
-        ?address
+        ?uri
         ?heartbeat_config
         ?description
         ?implementations
-        () =
-    client ?address ?heartbeat_config ?description ?implementations ()
+        ()
+    =
+    client
+      ?uri
+      ?heartbeat_config
+      ?description
+      ?implementations
+      ()
     >>| Or_error.ok_exn
 end

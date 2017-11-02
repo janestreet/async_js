@@ -4,6 +4,7 @@
   (libraries (js_of_ocaml
               async_kernel
               async_rpc_kernel
+              uri
               ))
   (preprocess (pps (ppx_jane js_of_ocaml-ppx ppx_driver.runner)))))
 

@@ -1,5 +1,6 @@
 open Core_kernel
 open Async_kernel
+open Ocaml_uri
 open Import
 
 module Any             = Rpc_kernel.Rpc.Any
@@ -16,14 +17,15 @@ module Pipe_close_reason = Rpc_kernel.Rpc.Pipe_close_reason
 module Connection : sig
   include module type of struct include Rpc_kernel.Rpc.Connection end
 
-  type ('a, 's) client_t
-    = ?address           : Host_and_port.t (* Default: host and port of the current page *)
+  (** This type of client connects to the websocket at the root of some host and port,
+      i.e. [ws://<address>/]. *)
+  type ('rest, 'implementations) client_t
+    =  ?uri              : Uri.t
     -> ?heartbeat_config : Heartbeat_config.t
     -> ?description      : Info.t
-    -> ?implementations  : 's Client_implementations.t
-    -> unit
-    -> 'a Deferred.t
+    -> ?implementations  : 'implementations Client_implementations.t
+    -> 'rest
 
-  val client     : (t Or_error.t, 's) client_t
-  val client_exn : (t           , 's) client_t
+  val client     : (unit -> t Deferred.Or_error.t, 's) client_t
+  val client_exn : (unit -> t Deferred.t         , 's) client_t
 end
