@@ -123,3 +123,27 @@ let init () = force initialization
 let initialized () = !initialized_ref
 
 let set_extract_js_error f = extract_js_error := f
+
+let document_loaded =
+  let complete = Js.string "complete" in
+  let readystatechange, readystatechange_ev =
+    let s = "readystatechange" in
+    Js.string s, Dom.Event.make s
+  in
+  let add_event target evt handler =
+    ignore (Dom_html.addEventListener target evt handler Js._false : Dom.event_listener_id)
+  in
+  fun () ->
+    if Dom_html.document##.readyState = complete
+    then Async_kernel.Deferred.unit
+    else
+      let loaded = Async_kernel.Ivar.create () in
+      let handler evt =
+        if evt##._type <> readystatechange || Dom_html.document##.readyState = complete
+        then Async_kernel.Ivar.fill_if_empty loaded ();
+        Js._true
+      in
+      add_event Dom_html.document Dom_html.Event.domContentLoaded (Dom.handler handler);
+      add_event Dom_html.document readystatechange_ev             (Dom.handler handler);
+      add_event Dom_html.window   Dom_html.Event.load             (Dom.handler handler);
+      Async_kernel.Ivar.read loaded

@@ -105,28 +105,25 @@ let run_app ~initial_state ~updates ~view =
 
 let () =
   Async_js.init ();
-  Dom_html.window##.onload := Dom_html.handler (fun _ev ->
-    don't_wait_for (
-      get "value" >>= fun res ->
-      let view, value_opt =
-        match res with
-        | Error e ->
-          let open Vdom in
-          ((fun _ ->
-             Node.body [] [Node.text (Error.to_string_hum e)])
-          , None)
-        | Ok value_opt ->
-          (view, value_opt)
-      in
-      run_app
-        ~view
-        ~updates:event_reader
-        ~initial_state:
-          { value = Option.value ~default:"" value_opt
-          ; key = "value"
-          };
-      Deferred.unit
-    );
-    Js.bool true)
+  don't_wait_for (
+    Async_js.document_loaded () >>= fun () ->
+    get "value" >>| fun res ->
+    let view, value_opt =
+      match res with
+      | Error e ->
+        let open Vdom in
+        ((fun _ ->
+           Node.body [] [Node.text (Error.to_string_hum e)])
+        , None)
+      | Ok value_opt ->
+        (view, value_opt)
+    in
+    run_app
+      ~view
+      ~updates:event_reader
+      ~initial_state:
+        { value = Option.value ~default:"" value_opt
+        ; key = "value"
+        }
+  )
 ;;
-
