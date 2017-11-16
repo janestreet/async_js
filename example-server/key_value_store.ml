@@ -55,7 +55,7 @@ let main port_opt () =
 ;;
 
 let () =
-  Command.async
+  Command.async_spec
     ~summary:"key value store server"
     Command.Spec.(
       empty
