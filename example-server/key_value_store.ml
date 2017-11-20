@@ -19,7 +19,7 @@ let state = String.Table.create ()
 
 let main port_opt () =
   let port = Option.value ~default:8000 port_opt in
-  Server.create (Tcp.on_port port) (fun ~body:_ _addr request ->
+  Server.create (Tcp.Where_to_listen.of_port port) (fun ~body:_ _addr request ->
     match request.meth with
     | `GET ->
       let uri_path = Uri.path request.uri in
@@ -63,4 +63,3 @@ let () =
     )
     main
   |> Command.run
-
