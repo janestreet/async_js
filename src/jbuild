@@ -7,7 +7,7 @@
               async_rpc_kernel
               uri
               ))
-  (preprocess (pps (ppx_jane js_of_ocaml-ppx ppx_driver.runner)))))
+  (preprocess (pps (ppx_jane js_of_ocaml-ppx ppxlib.runner)))))
 
 
 (jbuild_version 1)

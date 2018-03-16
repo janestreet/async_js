@@ -2,7 +2,7 @@
  ((names (example))
   (flags (:standard -safe-string))
   (libraries (virtual_dom async_js core_kernel async_kernel js_of_ocaml))
-  (preprocess (pps (js_of_ocaml-ppx ppx_sexp_conv ppx_driver.runner)))
+  (preprocess (pps (js_of_ocaml-ppx ppx_sexp_conv ppxlib.runner)))
   ))
 
 
