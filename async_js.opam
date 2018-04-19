@@ -19,7 +19,7 @@ depends: [
   "ppxlib"                  {>= "0.1.0"}
   "uri"
 ]
-available: [ ocaml-version >= "4.04.1" ]
+available: [ ocaml-version >= "4.04.2" ]
 descr: "
 A small library that provide Async support for JavaScript platforms.
 "
