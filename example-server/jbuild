@@ -1,6 +1,6 @@
 (executables
   ((names (key_value_store))
-   (libraries (core async cohttp cohttp_async_lib uri))
+   (libraries (core async cohttp cohttp-async uri))
    (preprocess (pps (ppx_jane ppxlib.runner)))
    ))
 
