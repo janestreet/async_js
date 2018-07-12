@@ -3,6 +3,7 @@
 
 open Async_kernel
 open Js_of_ocaml
+
 (** [sleep d] is a deferred which becomes determined in [d] seconds. *)
 val sleep : float -> unit Deferred.t
 
@@ -15,9 +16,8 @@ val init : unit -> unit
 
 val initialized : unit -> bool
 
-
 (**/**)
 
 val set_extract_js_error : (exn -> Js.error Js.t option) -> unit
 
-val document_loaded: unit -> unit Deferred.t
+val document_loaded : unit -> unit Deferred.t
