@@ -48,7 +48,9 @@ let view state =
   Node.body
     []
     [ Node.div
-        [ Attr.style [ "width", "100%"; "height", "100%" ]; Attr.create "tabindex" "1" ]
+        [ Attr.style Css.(width Length.percent100 @> height Length.percent100)
+        ; Attr.create "tabindex" "1"
+        ]
         [ Node.h2 [] [ Node.text "Value" ]
         ; Node.input
             [ Attr.create "type" "text"
