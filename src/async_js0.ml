@@ -5,7 +5,6 @@ module Scheduler = Async_kernel.Async_kernel_scheduler
 open Js_of_ocaml
 
 let sleep d = Clock_ns.after (Time_ns.Span.of_sec d)
-
 let yield () = Scheduler.yield (Scheduler.t ())
 
 let extract_js_error = ref (fun _ -> None)
@@ -31,7 +30,8 @@ let run =
   let rec loop () =
     let t = Scheduler.t () in
     match !state, Scheduler.uncaught_exn t with
-    | _, Some _ | State.Running, None -> ()
+    | _, Some _
+    | State.Running, None -> ()
     | (State.Idle | State.Will_run_soon), None ->
       state := State.Running;
       Scheduler.run_cycle t;
@@ -121,9 +121,7 @@ let initialization =
 ;;
 
 let init () = force initialization
-
 let initialized () = !initialized_ref
-
 let set_extract_js_error f = extract_js_error := f
 
 let document_loaded =

@@ -27,6 +27,5 @@ end
     -> 'rest
 
   val client : (unit -> t Deferred.Or_error.t, 's) client_t
-
   val client_exn : (unit -> t Deferred.t, 's) client_t
 end

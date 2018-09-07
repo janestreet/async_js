@@ -6,19 +6,24 @@ let is_valid_id s =
   then false
   else (
     match s.[0] with
-    | '0'..'9' -> false
+    | '0' .. '9' -> false
     | _ ->
       String.for_all s ~f:(function
-        | 'a'..'z' | 'A'..'Z' | '_' | '0'..'9' -> true
+        | 'a' .. 'z'
+        | 'A' .. 'Z'
+        | '_'
+        | '0' .. '9' -> true
         | _ -> false))
 ;;
 
 let rec key_value_shape ~rev_acc = function
   | [] -> Some (List.rev rev_acc)
-  | Sexp.Atom name :: rest when is_valid_id name ->
+  | Sexp.Atom name :: rest
+    when is_valid_id name ->
     let rev_acc = (name, None) :: rev_acc in
     key_value_shape ~rev_acc rest
-  | Sexp.List [ Sexp.Atom name; v ] :: rest when is_valid_id name ->
+  | Sexp.List [ Sexp.Atom name; v ] :: rest
+    when is_valid_id name ->
     let rev_acc = (name, Some v) :: rev_acc in
     key_value_shape ~rev_acc rest
   | _ -> None
@@ -26,7 +31,7 @@ let rec key_value_shape ~rev_acc = function
 
 let rec any_of_sexp = function
   | Sexp.Atom s -> Js.Unsafe.inject (Js.string s)
-  | Sexp.List [ Atom name; v ] -> Js.Unsafe.obj [|name, any_of_sexp v|]
+  | Sexp.List [ Atom name; v ] -> Js.Unsafe.obj [| name, any_of_sexp v |]
   | Sexp.List l ->
     (match key_value_shape ~rev_acc:[] l with
      | None -> List.map l ~f:any_of_sexp |> Array.of_list |> Js.array |> Js.Unsafe.inject

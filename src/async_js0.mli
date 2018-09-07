@@ -19,5 +19,4 @@ val initialized : unit -> bool
 (**/**)
 
 val set_extract_js_error : (exn -> Js.error Js.t option) -> unit
-
 val document_loaded : unit -> unit Deferred.t

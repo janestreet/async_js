@@ -48,5 +48,4 @@ val request :
     with_request_args
 
 val get : ?arguments:(string * string) list -> string -> string Deferred.Or_error.t
-
 val post : ?body:Post_body.t -> string -> string Deferred.Or_error.t

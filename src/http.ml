@@ -46,7 +46,7 @@ type 'k with_request_args =
 let has_get_args url = Option.is_some (String.index url '?')
 
 let request
-      ?(headers=[])
+      ?(headers = [])
       ?on_progress
       ?on_upload_progress
       ~url
@@ -141,7 +141,7 @@ let request
   Ivar.read response
 ;;
 
-let get ?(arguments=[]) url =
+let get ?(arguments = []) url =
   Deferred.Or_error.map
     ~f:(fun resp -> resp.content)
     (request ~url ~response_type:Default (Get arguments))

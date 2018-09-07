@@ -45,7 +45,7 @@ module Connection = struct
 
   let pipe_of_websocket url =
     let url = Uri.to_string url in
-    let ws = (new%js WebSockets.webSocket) (Js.string url) in
+    let ws = new%js WebSockets.webSocket (Js.string url) in
     let reader_r, reader_w = Pipe.create () in
     let writer_r, writer_w = Pipe.create () in
     let fatal_error = ref false in
@@ -94,7 +94,8 @@ module Connection = struct
         (Pipe.iter_without_pushback writer_r ~f:(fun data ->
            match (ws##.readyState : WebSockets.readyState) with
            | CLOSING | CLOSED -> ()
-           | (CONNECTING | OPEN) when !fatal_error -> ()
+           | CONNECTING | OPEN
+             when !fatal_error -> ()
            | CONNECTING | OPEN ->
              let buffer = Typed_array.Bigstring.to_arrayBuffer data in
              ws##send_buffer buffer));
