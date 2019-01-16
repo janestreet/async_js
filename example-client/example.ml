@@ -48,7 +48,7 @@ let view state =
   Node.body
     []
     [ Node.div
-        [ Attr.style Css.(width Length.percent100 @> height Length.percent100)
+        [ Attr.style Css_gen.(width Length.percent100 @> height Length.percent100)
         ; Attr.create "tabindex" "1"
         ]
         [ Node.h2 [] [ Node.text "Value" ]
@@ -82,7 +82,7 @@ let update u state =
 let run_app ~initial_state ~updates ~view =
   let state = ref initial_state in
   let vdom = ref (view initial_state) in
-  let elt = ref (Vdom.Node.to_dom !vdom :> Dom.element Js.t) in
+  let elt = ref (Vdom.Node.to_dom !vdom) in
   Dom_html.document##.body := (Js.Unsafe.coerce !elt : Dom_html.bodyElement Js.t);
   Pipe.iter updates ~f:(fun u ->
     state := update u !state;
