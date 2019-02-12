@@ -137,8 +137,8 @@ module Connection = struct
     let pipe_reader, pipe_writer = pipe_of_websocket uri in
     let description =
       match description with
-      | None -> Info.create "Client connected via WS" uri Uri.sexp_of_t
-      | Some desc -> Info.tag_arg desc "via WS" uri Uri.sexp_of_t
+      | None -> Info.create "Client connected via WS" uri Uri_sexp.sexp_of_t
+      | Some desc -> Info.tag_arg desc "via WS" uri Uri_sexp.sexp_of_t
     in
     let transport =
       Pipe_transport.create Pipe_transport.Kind.bigstring pipe_reader pipe_writer
