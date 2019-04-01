@@ -1,7 +1,7 @@
 open Core_kernel
 module Time_ns = Core_kernel.Time_ns
 module Clock_ns = Async_kernel.Clock_ns
-module Scheduler = Async_kernel.Async_kernel_scheduler
+module Scheduler = Async_kernel.Async_kernel_scheduler.Private
 open Js_of_ocaml
 
 let sleep d = Clock_ns.after (Time_ns.Span.of_sec d)
