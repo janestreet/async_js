@@ -1,4 +1,5 @@
 open Core_kernel
+open Poly
 module Time_ns = Core_kernel.Time_ns
 module Clock_ns = Async_kernel.Clock_ns
 module Scheduler = Async_kernel.Async_kernel_scheduler.Private

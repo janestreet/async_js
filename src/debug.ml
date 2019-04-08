@@ -1,5 +1,6 @@
 open Js_of_ocaml
 open Core_kernel
+open Poly
 
 let is_valid_id s =
   if s = ""

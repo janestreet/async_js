@@ -1,4 +1,5 @@
 open Core_kernel
+open Poly
 open Async_kernel
 open Js_of_ocaml
 open Ocaml_uri
