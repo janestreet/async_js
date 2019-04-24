@@ -14,8 +14,8 @@ module Pipe_close_reason = Rpc_kernel.Rpc.Pipe_close_reason
 
 module Connection : sig
   include module type of struct
-  include Rpc_kernel.Rpc.Connection
-end
+    include Rpc_kernel.Rpc.Connection
+  end
 
   (** This type of client connects to the websocket at the root of some host and port,
       i.e. [ws://<address>/]. *)
