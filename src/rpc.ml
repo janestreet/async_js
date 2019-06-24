@@ -83,20 +83,19 @@ module Connection = struct
       Js._false
     in
     let onopen ws _event =
-      ws##.onmessage :=
-        Dom.full_handler (fun _ (event : _ WebSockets.messageEvent Js.t) ->
-          if not !fatal_error
-          then (
-            let data = Typed_array.Bigstring.of_arrayBuffer event##.data_buffer in
-            Pipe.write_without_pushback reader_w data;
-            Js._true)
-          else Js._false);
+      ws##.onmessage
+      := Dom.full_handler (fun _ (event : _ WebSockets.messageEvent Js.t) ->
+        if not !fatal_error
+        then (
+          let data = Typed_array.Bigstring.of_arrayBuffer event##.data_buffer in
+          Pipe.write_without_pushback reader_w data;
+          Js._true)
+        else Js._false);
       don't_wait_for
         (Pipe.iter_without_pushback writer_r ~f:(fun data ->
            match (ws##.readyState : WebSockets.readyState) with
            | CLOSING | CLOSED -> ()
-           | CONNECTING | OPEN
-             when !fatal_error -> ()
+           | (CONNECTING | OPEN) when !fatal_error -> ()
            | CONNECTING | OPEN ->
              let buffer = Typed_array.Bigstring.to_arrayBuffer data in
              ws##send_buffer buffer));

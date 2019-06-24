@@ -41,11 +41,11 @@ module Response : sig
     }
 end
 
-val request :
-  (response_type:'resp Response_type.t
-   -> Method_with_args.t
-   -> 'resp Response.t Deferred.Or_error.t)
-    with_request_args
+val request
+  : (response_type:'resp Response_type.t
+     -> Method_with_args.t
+     -> 'resp Response.t Deferred.Or_error.t)
+      with_request_args
 
 val get : ?arguments:(string * string) list -> string -> string Deferred.Or_error.t
 val post : ?body:Post_body.t -> string -> string Deferred.Or_error.t

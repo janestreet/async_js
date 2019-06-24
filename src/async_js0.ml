@@ -31,8 +31,7 @@ let run =
   let rec loop () =
     let t = Scheduler.t () in
     match !state, Scheduler.uncaught_exn t with
-    | _, Some _
-    | State.Running, None -> ()
+    | _, Some _ | State.Running, None -> ()
     | (State.Idle | State.Will_run_soon), None ->
       state := State.Running;
       Scheduler.run_cycle t;

@@ -73,60 +73,60 @@ let request
   List.iter headers ~f:(fun (name, value) ->
     req##setRequestHeader (Js.string name) (Js.string value));
   let response : resp Response.t Or_error.t Ivar.t = Ivar.create () in
-  req##.onerror :=
-    Dom.handler (fun _ ->
-      Ivar.fill_if_empty response (Or_error.error_string "Network error");
-      Js._true);
-  req##.ontimeout :=
-    Dom.handler (fun _ ->
-      Ivar.fill_if_empty response (Or_error.error_string "Timeout");
-      Js._true);
-  req##.onreadystatechange :=
-    Js.wrap_callback (fun _ ->
-      match req##.readyState with
-      | DONE ->
-        let res =
-          if req##.status >= 200 && req##.status < 300
-          then (
-            let content : resp =
-              let open Response_type in
-              match response_type with
-              | ArrayBuffer -> File.CoerceTo.arrayBuffer req##.response
-              | Blob -> File.CoerceTo.blob req##.response
-              | Document -> File.CoerceTo.document req##.response
-              | JSON -> File.CoerceTo.json req##.response
-              | Text -> req##.responseText
-              | Default -> Js.to_string req##.responseText
-            in
-            let get_header s =
-              Opt.case
-                (req##getResponseHeader (Js.bytestring s))
-                (fun () -> None)
-                (fun v -> Some (Js.to_string v))
-            in
-            Ok { Response.content; code = req##.status; get_header })
-          else
-            Or_error.error_s
-              [%sexp
-                "Request failed"
-              , { code = (req##.status : int)
-                ; response_text = (Js.to_string req##.responseText : string)
-                ; status_text = (Js.to_string req##.statusText : string)
-                }]
-        in
-        Ivar.fill_if_empty response res
-      | _ -> ());
+  req##.onerror
+  := Dom.handler (fun _ ->
+    Ivar.fill_if_empty response (Or_error.error_string "Network error");
+    Js._true);
+  req##.ontimeout
+  := Dom.handler (fun _ ->
+    Ivar.fill_if_empty response (Or_error.error_string "Timeout");
+    Js._true);
+  req##.onreadystatechange
+  := Js.wrap_callback (fun _ ->
+    match req##.readyState with
+    | DONE ->
+      let res =
+        if req##.status >= 200 && req##.status < 300
+        then (
+          let content : resp =
+            let open Response_type in
+            match response_type with
+            | ArrayBuffer -> File.CoerceTo.arrayBuffer req##.response
+            | Blob -> File.CoerceTo.blob req##.response
+            | Document -> File.CoerceTo.document req##.response
+            | JSON -> File.CoerceTo.json req##.response
+            | Text -> req##.responseText
+            | Default -> Js.to_string req##.responseText
+          in
+          let get_header s =
+            Opt.case
+              (req##getResponseHeader (Js.bytestring s))
+              (fun () -> None)
+              (fun v -> Some (Js.to_string v))
+          in
+          Ok { Response.content; code = req##.status; get_header })
+        else
+          Or_error.error_s
+            [%sexp
+              "Request failed"
+            , { code = (req##.status : int)
+              ; response_text = (Js.to_string req##.responseText : string)
+              ; status_text = (Js.to_string req##.statusText : string)
+              }]
+      in
+      Ivar.fill_if_empty response res
+    | _ -> ());
   Option.iter on_progress ~f:(fun on_progress ->
-    req##.onprogress :=
-      Dom.handler (fun e ->
-        on_progress ~loaded:e##.loaded ~total:e##.total;
-        Js._true));
+    req##.onprogress
+    := Dom.handler (fun e ->
+      on_progress ~loaded:e##.loaded ~total:e##.total;
+      Js._true));
   Optdef.iter req##.upload (fun upload ->
     Option.iter on_upload_progress ~f:(fun on_upload_progress ->
-      upload##.onprogress :=
-        Dom.handler (fun e ->
-          on_upload_progress ~loaded:e##.loaded ~total:e##.total;
-          Js._true)));
+      upload##.onprogress
+      := Dom.handler (fun e ->
+        on_upload_progress ~loaded:e##.loaded ~total:e##.total;
+        Js._true)));
   (match method_with_args with
    | Get _ -> req##send Js.null
    | Post body ->

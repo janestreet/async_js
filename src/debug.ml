@@ -10,10 +10,7 @@ let is_valid_id s =
     | '0' .. '9' -> false
     | _ ->
       String.for_all s ~f:(function
-        | 'a' .. 'z'
-        | 'A' .. 'Z'
-        | '_'
-        | '0' .. '9' -> true
+        | 'a' .. 'z' | 'A' .. 'Z' | '_' | '0' .. '9' -> true
         | _ -> false))
 ;;
 
@@ -22,13 +19,11 @@ let is_valid_field_name ~seen name = is_valid_id name && not (Set.mem seen name)
 let rec key_value_shape ~seen ~rev_acc list =
   match (list : Sexp.t list) with
   | [] -> Some (List.rev rev_acc)
-  | Atom name :: rest
-    when is_valid_field_name ~seen name ->
+  | Atom name :: rest when is_valid_field_name ~seen name ->
     let rev_acc = (name, None) :: rev_acc in
     let seen = Set.add seen name in
     key_value_shape ~seen ~rev_acc rest
-  | List [ Atom name; v ] :: rest
-    when is_valid_field_name ~seen name ->
+  | List [ Atom name; v ] :: rest when is_valid_field_name ~seen name ->
     let rev_acc = (name, Some v) :: rev_acc in
     let seen = Set.add seen name in
     key_value_shape ~seen ~rev_acc rest
