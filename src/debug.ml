@@ -53,7 +53,10 @@ let%expect_test _ =
 
     type t =
       | Foo
-      | Bar of { field1 : u; field2 : string option }
+      | Bar of
+          { field1 : u
+          ; field2 : string option
+          }
     [@@deriving sexp]
   end
   in
