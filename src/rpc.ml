@@ -3,6 +3,7 @@ open Poly
 open Async_kernel
 open Js_of_ocaml
 open Ocaml_uri
+open Ocaml_uri_sexp
 open Import
 module Pipe_transport = Rpc_kernel.Pipe_transport
 module Any = Rpc_kernel.Rpc.Any
