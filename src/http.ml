@@ -88,15 +88,34 @@ let request
       let res =
         if req##.status >= 200 && req##.status < 300
         then (
-          let content : resp =
+          let%bind.Or_error content : resp Or_error.t =
+            let get_text_contents_or_error () =
+              Opt.case
+                req##.responseText
+                (fun () ->
+                   (* This case should not be entered as per the specification of
+                      XMLHttpRequest at MDN web docs, because if a request is successful,
+                      in state [DONE] and response_type [Text] or [Default],
+                      [responseText] should not be [null].
+                      See https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseText
+                   *)
+                   error_s
+                     [%sexp
+                       "No response returned despite successful request"
+                     , { code = (req##.status : int)
+                       ; status_text = (Js.to_string req##.statusText : string)
+                       }])
+                Result.return
+            in
             let open Response_type in
             match response_type with
-            | ArrayBuffer -> File.CoerceTo.arrayBuffer req##.response
-            | Blob -> File.CoerceTo.blob req##.response
-            | Document -> File.CoerceTo.document req##.response
-            | JSON -> File.CoerceTo.json req##.response
-            | Text -> req##.responseText
-            | Default -> Js.to_string req##.responseText
+            | ArrayBuffer -> Ok (File.CoerceTo.arrayBuffer req##.response)
+            | Blob -> Ok (File.CoerceTo.blob req##.response)
+            | Document -> Ok (File.CoerceTo.document req##.response)
+            | JSON -> Ok (File.CoerceTo.json req##.response)
+            | Text -> get_text_contents_or_error ()
+            | Default ->
+              Or_error.map (get_text_contents_or_error ()) ~f:Js.to_string
           in
           let get_header s =
             Opt.case
@@ -110,7 +129,6 @@ let request
             [%sexp
               "Request failed"
             , { code = (req##.status : int)
-              ; response_text = (Js.to_string req##.responseText : string)
               ; status_text = (Js.to_string req##.statusText : string)
               }]
       in
