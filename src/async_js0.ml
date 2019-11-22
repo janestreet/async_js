@@ -1,5 +1,4 @@
 open Core_kernel
-open Poly
 module Time_ns = Core_kernel.Time_ns
 module Clock_ns = Async_kernel.Clock_ns
 module Scheduler = Async_kernel.Async_kernel_scheduler.Private
@@ -125,22 +124,25 @@ let initialized () = !initialized_ref
 let set_extract_js_error f = extract_js_error := f
 
 let document_loaded =
-  let complete = Js.string "complete" in
-  let readystatechange, readystatechange_ev =
-    let s = "readystatechange" in
-    Js.string s, Dom.Event.make s
+  let js_string_compare s =
+    let compare_using_javascript_triple_equal_for_strings = phys_equal in
+    compare_using_javascript_triple_equal_for_strings (Js.string s)
   in
+  let ready_state_change = "readystatechange" in
+  let complete = "complete" in
+  let readystatechange_ev = Dom.Event.make ready_state_change in
   let add_event target evt handler =
     ignore
       (Dom_html.addEventListener target evt handler Js._false : Dom.event_listener_id)
   in
   fun () ->
-    if Dom_html.document##.readyState = complete
+    if js_string_compare complete Dom_html.document##.readyState
     then Async_kernel.Deferred.unit
     else (
       let loaded = Async_kernel.Ivar.create () in
       let handler evt =
-        if evt##._type <> readystatechange || Dom_html.document##.readyState = complete
+        if (not (js_string_compare ready_state_change evt##._type))
+        || js_string_compare complete Dom_html.document##.readyState
         then Async_kernel.Ivar.fill_if_empty loaded ();
         Js._true
       in

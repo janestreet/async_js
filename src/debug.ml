@@ -1,9 +1,8 @@
 open Js_of_ocaml
 open Core_kernel
-open Poly
 
 let is_valid_id s =
-  if s = ""
+  if String.equal s ""
   then false
   else (
     match s.[0] with

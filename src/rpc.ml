@@ -1,5 +1,4 @@
 open Core_kernel
-open Poly
 open Async_kernel
 open Js_of_ocaml
 open Ocaml_uri
@@ -63,7 +62,7 @@ module Connection = struct
       if not (Js.to_bool close_event##.wasClean && close_event##.code = 1000)
       then (
         let reason = Js.to_string close_event##.reason in
-        let reason = if reason = "" then "unknown reason" else reason in
+        let reason = if String.equal reason "" then "unknown reason" else reason in
         let cleanly = if Js.to_bool close_event##.wasClean then " cleanly" else "" in
         Monitor.send_exn
           monitor
@@ -123,12 +122,14 @@ module Connection = struct
       match uri with
       | Some uri -> uri
       | None ->
-        let scheme = if Url.Current.protocol = "https:" then "wss" else "ws" in
+        let scheme =
+          if String.equal Url.Current.protocol "https:" then "wss" else "ws"
+        in
         let port =
           match Url.Current.port with
           | Some port -> port
           | None ->
-            if Url.Current.protocol = "https:"
+            if String.equal Url.Current.protocol "https:"
             then Url.default_https_port
             else Url.default_http_port
         in
