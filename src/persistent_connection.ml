@@ -1,7 +1,6 @@
 open Core_kernel
-open Import
 
-module Rpc = Rpc_kernel.Persistent_connection.Make (struct
+module Rpc = Async_rpc_kernel.Persistent_connection.Make (struct
     module Address = Host_and_port
 
     type t = Rpc.Connection.t
