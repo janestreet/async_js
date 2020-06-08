@@ -1,3 +1,4 @@
+module Async_js_debug = Debug
 open Core_kernel
 open Async_kernel
 open Js_of_ocaml
@@ -176,10 +177,16 @@ module Websocket_connection = struct
        | CLOSING | CLOSED ->
          (* e.g., Refused to connect to ws: because it violates Content Security Policy *)
          cleanup ~reason:(Error.of_string "WebSocket failed immediately (illegal URI?)"));
-      (* Upon an error, [onerror] fires and then [onclose] fires (it's possible for
-         a graceful closure to call [onclose] only). Since Async_RPC has no notion of
-         graceful closure, we only need to listen to [onclose] anyway. Further, the event
-         passed to [onerror] contains no extra information about the error. *)
+      (* Upon an error, [onerror] fires and then [onclose] fires (it's possible for a
+         graceful closure to call [onclose] only). Since Async_RPC has no notion of
+         graceful closure, we only need to handle [onclose] anyway. Further, the event
+         passed to [onerror] contains no extra information about the error.  Note that we
+         still listen to [onerror] to prevent the error from leaking to uncontrolled
+         context *)
+      websocket##.onerror
+      := Dom.handler (fun (_ : _ Dom.event Js.t) ->
+        Async_js_debug.log_s [%message "websocket encountered unexpected error"];
+        Js._false);
       websocket##.onmessage := Dom.handler onmessage;
       websocket##.onclose := Dom.handler onclose;
       let connected_deferred = Ivar.read connected_ivar in
@@ -194,7 +201,10 @@ module Websocket_connection = struct
              | CLOSING | CLOSED -> ()
              | OPEN ->
                let buffer = Typed_array.Bigstring.to_arrayBuffer data in
-               websocket##send_buffer buffer));
+               (try websocket##send_buffer buffer with
+                | exn ->
+                  Error.raise
+                    (Error.tag ~tag:"websocket##send_buffer" (Error.of_exn exn)))));
       let cleanup_when_a_pipe_is_closed =
         let%map () =
           Deferred.any_unit [ Pipe.closed to_server; Pipe.closed from_server ]

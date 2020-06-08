@@ -80,7 +80,7 @@ let rec cleanup =
     List
       (List.map l ~f:(function
          | List [ Atom name; _ ] when cleanup_name name ->
-           List [ Atom name; Atom "<opaque>" ]
+           List [ Atom name; Atom (String.uppercase name) ]
          | x -> cleanup x))
 ;;
 
@@ -146,9 +146,26 @@ let%expect_test _ =
     (* synchronous failure (attempted use of port 20) *)
     let%bind () = dispatch_and_print "ws://localhost:20/" in
     let%bind () =
+      [%expect {|
+"Failed to construct 'WebSocket': The port 20 is not allowed." |}]
+    in
+    (* synchronous failure (invalid url) *)
+    let%bind () = dispatch_and_print "ws://in valid/" in
+    let%bind () =
+      [%expect {|
+          "WebSocket connection failed (Abnormal_closure)" |}]
+    in
+    (* synchronous failure (invalid url) *)
+    let%bind () = dispatch_and_print (sprintf "ws://localhost:%d/\000" web_port) in
+    let%bind () =
+      let%map output = [%expect.output] in
+      String.substr_replace_all output ~pattern:(Int.to_string web_port) ~with_:"PORT"
+      |> print_endline
+    in
+    let%bind () =
       [%expect
         {|
-          "Failed to construct 'WebSocket': The port 20 is not allowed." |}]
+          "Failed to construct 'WebSocket': The URL 'ws://localhost:PORT/%00' is invalid." |}]
     in
     (* immediate failure *)
     let%bind () = dispatch_and_print (sprintf "wss://localhost:%d/" web_port) in
@@ -168,8 +185,7 @@ let%expect_test _ =
           New connection
           ((rpc_error (Connection_closed ("RPC transport stopped")))
            (connection_description
-            (websocket
-             (uri ((scheme (ws)) (host (localhost)) (port <opaque>) (path /)))))
+            (websocket (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))
            (rpc_tag send-string) (rpc_version 1)) |}]
     in
     (* successful connection *)
