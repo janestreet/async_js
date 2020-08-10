@@ -203,8 +203,7 @@ module Websocket_connection = struct
                let buffer = Typed_array.Bigstring.to_arrayBuffer data in
                (try websocket##send_buffer buffer with
                 | exn ->
-                  Error.raise
-                    (Error.tag ~tag:"websocket##send_buffer" (Error.of_exn exn)))));
+                  Error.raise (Error.tag ~tag:"websocket##send_buffer" (Error.of_exn exn)))));
       let cleanup_when_a_pipe_is_closed =
         let%map () =
           Deferred.any_unit [ Pipe.closed to_server; Pipe.closed from_server ]

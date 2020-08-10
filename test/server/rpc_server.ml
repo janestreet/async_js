@@ -3,11 +3,9 @@ open Async
 open Cohttp
 
 let implementation_send_string =
-  Rpc.Rpc.implement'
-    Async_js_test_lib.Rpcs.send_string
-    (fun (_ : Rpc.Connection.t) str ->
-       Log.Global.debug_s [%message "Got request for send_string: " ~_:str];
-       str)
+  Rpc.Rpc.implement' Async_js_test_lib.Rpcs.send_string (fun (_ : Rpc.Connection.t) str ->
+    Log.Global.debug_s [%message "Got request for send_string: " ~_:str];
+    str)
 ;;
 
 let implementation_close_connection =
@@ -22,9 +20,7 @@ let implementation_close_connection =
 
 let start_http_server () =
   let reader, writer = Pipe.create () in
-  let implementations =
-    [ implementation_send_string; implementation_close_connection ]
-  in
+  let implementations = [ implementation_send_string; implementation_close_connection ] in
   let implementations =
     Rpc.Implementations.create_exn ~implementations ~on_unknown_rpc:`Raise
   in
