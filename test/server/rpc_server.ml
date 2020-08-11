@@ -138,59 +138,52 @@ let%expect_test _ =
     in
     let dispatch_and_print = dispatch_and_print ~client in
     let%bind () = wait_for_the_page_to_be_loaded client in
-    let%bind () = [%expect {| Loaded |}] in
+    [%expect {| Loaded |}];
     (* synchronous failure (attempted use of port 20) *)
     let%bind () = dispatch_and_print "ws://localhost:20/" in
-    let%bind () =
-      [%expect {|
-"Failed to construct 'WebSocket': The port 20 is not allowed." |}]
-    in
+    [%expect {|
+"Failed to construct 'WebSocket': The port 20 is not allowed." |}];
     (* synchronous failure (invalid url) *)
     let%bind () = dispatch_and_print "ws://in valid/" in
-    let%bind () =
-      [%expect {|
-          "WebSocket connection failed (Abnormal_closure)" |}]
-    in
+    [%expect {|
+          "WebSocket connection failed (Abnormal_closure)" |}];
     (* synchronous failure (invalid url) *)
     let%bind () = dispatch_and_print (sprintf "ws://localhost:%d/\000" web_port) in
     let%bind () =
-      let%map output = [%expect.output] in
+      let output = [%expect.output] in
       String.substr_replace_all output ~pattern:(Int.to_string web_port) ~with_:"PORT"
-      |> print_endline
+      |> print_endline;
+      return ()
     in
-    let%bind () =
-      [%expect
-        {|
-          "Failed to construct 'WebSocket': The URL 'ws://localhost:PORT/%00' is invalid." |}]
-    in
+    [%expect
+      {|
+          "Failed to construct 'WebSocket': The URL 'ws://localhost:PORT/%00' is invalid." |}];
     (* immediate failure *)
     let%bind () = dispatch_and_print (sprintf "wss://localhost:%d/" web_port) in
-    let%bind () = [%expect {| "WebSocket connection failed (Abnormal_closure)" |}] in
+    [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
     (* immediate failure *)
     let%bind () =
       dispatch_and_print (sprintf "ws://shouldnt-resolve.fakedomain.com/")
     in
-    let%bind () = [%expect {| "WebSocket connection failed (Abnormal_closure)" |}] in
+    [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
     (* successful connection, close after handshake *)
     let conn = read_new connection_pipe in
     print_when_connection_established_exn conn ~f:Rpc.Connection.close;
     let%bind () = dispatch_and_print (sprintf "ws://localhost:%d/" web_port) in
-    let%bind () =
-      [%expect
-        {|
+    [%expect
+      {|
           New connection
           ((rpc_error (Connection_closed ("RPC transport stopped")))
            (connection_description
             (websocket (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))
-           (rpc_tag send-string) (rpc_version 1)) |}]
-    in
+           (rpc_tag send-string) (rpc_version 1)) |}];
     (* successful connection *)
     let conn = read_new connection_pipe in
     print_when_connection_established_exn conn ~f:(fun (_ : Rpc.Connection.t) ->
       return ());
     let%bind () = dispatch_and_print (sprintf "ws://localhost:%d/" web_port) in
-    let%bind () = [%expect {|
+    [%expect {|
       New connection
-      "OK from client" |}] in
+      "OK from client" |}];
     return ())
 ;;
