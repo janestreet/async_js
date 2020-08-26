@@ -1,6 +1,6 @@
 open Core
 open Async
-open Cohttp
+open Cohttp_jane
 
 let implementation_send_string =
   Rpc.Rpc.implement' Async_js_test_lib.Rpcs.send_string (fun (_ : Rpc.Connection.t) str ->
@@ -55,7 +55,7 @@ let run_test f =
   let () = Log.Global.set_output [] in
   let%bind web_server, connection_pipe = start_http_server () in
   let web_server = Or_error.ok_exn web_server in
-  let web_port = Cohttp_async_lib.Server.listening_on web_server in
+  let web_port = Cohttp_async.Server.listening_on web_server in
   Web_testing.Test_client.with_client (fun client -> f web_port connection_pipe client)
 ;;
 
