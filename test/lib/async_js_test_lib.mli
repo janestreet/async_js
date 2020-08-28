@@ -10,5 +10,5 @@ module Callback_function : sig
   type 'a t = Open_rpc_and_wait of 'a [@@deriving sexp_of]
 
   val name : unit t -> string
-  val to_javascript_invocation : Ocaml_uri.Uri.t t -> string
+  val to_javascript_invocation : Uri.t t -> string
 end

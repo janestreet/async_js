@@ -82,7 +82,7 @@ let rec cleanup =
 
 let dispatch_and_print ~client s =
   let code =
-    let uri = Ocaml_uri.Uri.of_string s in
+    let uri = Uri.of_string s in
     Async_js_test_lib.Callback_function.to_javascript_invocation (Open_rpc_and_wait uri)
   in
   let%map response = Web_testing.Test_client.dispatch_js client code in

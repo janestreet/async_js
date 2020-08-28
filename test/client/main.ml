@@ -19,7 +19,7 @@ let promise_of_deferred d =
 ;;
 
 let open_connection ~uri =
-  let uri = if String.is_empty uri then None else Some (Ocaml_uri.Uri.of_string uri) in
+  let uri = if String.is_empty uri then None else Some (Uri.of_string uri) in
   Rpc.Connection.client ?uri ()
 ;;
 

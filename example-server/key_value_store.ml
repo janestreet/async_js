@@ -1,7 +1,6 @@
 open Core
 open Async
 open Cohttp_async
-open Ocaml_uri
 
 type state = string String.Table.t
 

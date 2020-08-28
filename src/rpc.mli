@@ -13,7 +13,7 @@ module Connection : sig
   (** This type of client connects to the websocket at the root of some host and port,
       i.e. [ws://<address>/]. *)
   type ('rest, 'implementations) client_t =
-    ?uri:Ocaml_uri.Uri.t
+    ?uri:Uri.t
     -> ?heartbeat_config:Heartbeat_config.t
     -> ?description:Info.t
     -> ?implementations:'implementations Client_implementations.t

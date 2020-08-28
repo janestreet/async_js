@@ -4,9 +4,9 @@ open Async_kernel
 open Js_of_ocaml
 
 module Uri = struct
-  include Ocaml_uri.Uri
+  include Uri
 
-  let sexp_of_t = Ocaml_uri_sexp.Uri_sexp.sexp_of_t
+  let sexp_of_t = Uri_sexp.sexp_of_t
 end
 
 module Websocket_connection = struct

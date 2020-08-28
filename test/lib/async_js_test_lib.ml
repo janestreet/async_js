@@ -29,11 +29,11 @@ module Callback_function = struct
 
   let to_javascript_invocation = function
     | Open_rpc_and_wait uri ->
-      sprintf {|%s("%s")|} (name (Open_rpc_and_wait ())) (Ocaml_uri.Uri.to_string uri)
+      sprintf {|%s("%s")|} (name (Open_rpc_and_wait ())) (Uri.to_string uri)
   ;;
 
   let%expect_test "to_javascript_invocation" =
-    Open_rpc_and_wait (Ocaml_uri.Uri.of_string "https://localhost:8443")
+    Open_rpc_and_wait (Uri.of_string "https://localhost:8443")
     |> to_javascript_invocation
     |> print_endline;
     [%expect {| openRpcAndWait("https://localhost:8443") |}]
