@@ -31,7 +31,15 @@ let wrap_callback f =
     (* Wrap the deferred into a Promise to allow devtools to wait on it  *)
     promise_of_deferred
       (let%map sexp =
-         match%map Monitor.try_with ~extract_exn:true (fun () -> f arguments) with
+         match%map
+           Monitor.try_with
+             ~run:
+               `Schedule
+             ~rest:
+               `Log
+             ~extract_exn:true
+             (fun () -> f arguments)
+         with
          | Ok (Ok s) -> s
          | Ok (Error e) -> Error.sexp_of_t e
          | Error exn ->
