@@ -7,7 +7,9 @@ open Js_of_ocaml
 let sleep d = Clock_ns.after (Time_ns.Span.of_sec d)
 let yield () = Scheduler.yield (Scheduler.t ())
 
-let extract_js_error = ref (fun _ -> None)
+let extract_js_error (exn : exn) : Js.error Js.t option =
+  Js.Opt.to_option (Js.js_error_of_exn exn)
+;;
 
 let run =
   let module State = struct
@@ -50,7 +52,7 @@ let run =
         match Async_kernel.Monitor.extract_exn exn with
         | Js.Error err -> Js.raise_js_error err
         | exn ->
-          (match !extract_js_error exn with
+          (match extract_js_error exn with
            | None -> raise exn
            | Some err ->
              (* Hack to get a better backtrace *)
@@ -92,7 +94,7 @@ let log name exn =
     match Async_kernel.Monitor.extract_exn exn with
     | Js.Error err -> `Js err
     | exn ->
-      (match !extract_js_error exn with
+      (match extract_js_error exn with
        | None -> `Exn exn
        | Some err -> `Js_and_exn (exn, err))
   in
@@ -121,7 +123,6 @@ let initialization =
 
 let init () = force initialization
 let initialized () = !initialized_ref
-let set_extract_js_error f = extract_js_error := f
 
 let document_loaded =
   let js_string_compare s =
