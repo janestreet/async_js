@@ -58,5 +58,5 @@ let () =
     ~summary:"key value store server"
     Command.Spec.(empty +> flag "-p" (optional int) ~doc:" port")
     main
-  |> Command.run
+  |> Command_unix.run
 ;;

@@ -1,2 +1,3 @@
-(executables (names key_value_store) (libraries core async cohttp-async uri)
+(executables (names key_value_store)
+ (libraries core async cohttp-async core.command_unix uri)
  (preprocess (pps ppx_jane)))
