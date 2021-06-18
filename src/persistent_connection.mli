@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 
 module Rpc :
   Async_rpc_kernel.Persistent_connection.S

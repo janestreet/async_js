@@ -1,5 +1,5 @@
 module Async_js_debug = Debug
-open Core_kernel
+open Core
 open Async_kernel
 open Js_of_ocaml
 

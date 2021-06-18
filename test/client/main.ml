@@ -1,4 +1,4 @@
-open Core_kernel
+open Core
 open Async_kernel
 open Async_js
 open Js_of_ocaml

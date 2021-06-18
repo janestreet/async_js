@@ -141,8 +141,7 @@ let%expect_test _ =
     [%expect {| Loaded |}];
     (* synchronous failure (attempted use of port 20) *)
     let%bind () = dispatch_and_print "ws://localhost:20/" in
-    [%expect {|
-"Failed to construct 'WebSocket': The port 20 is not allowed." |}];
+    [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
     (* synchronous failure (invalid url) *)
     let%bind () = dispatch_and_print "ws://in valid/" in
     [%expect {|

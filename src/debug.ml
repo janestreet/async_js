@@ -1,5 +1,5 @@
 open Js_of_ocaml
-open Core_kernel
+open Core
 
 let is_valid_id s =
   if String.equal s ""
@@ -45,6 +45,7 @@ let rec any_of_sexp = function
 ;;
 
 let log_s sexp = Firebug.console##log (any_of_sexp sexp)
+let log_s_as_string sexp = Firebug.console##log (Js.string (Sexp.to_string_hum sexp))
 
 let%expect_test _ =
   let module M = struct
