@@ -33,7 +33,7 @@ let style props =
 
 let event_reader, event_writer = Pipe.create ()
 
-module Event = Vdom.Event.Define (struct
+module Event = Vdom.Effect.Define (struct
     module Action = struct
       type t = update
     end
