@@ -231,7 +231,7 @@ module Websocket_connection = struct
   let client ?(uri = default_uri ()) ?heartbeat_config ?description ?implementations () =
     let description =
       Info.create_s
-        [%message "websocket" (description : Info.t sexp_option) (uri : Uri.t)]
+        [%message "websocket" (description : (Info.t option[@sexp.option])) (uri : Uri.t)]
     in
     let make_connection transport =
       let create { T.Client_implementations.connection_state; implementations } =

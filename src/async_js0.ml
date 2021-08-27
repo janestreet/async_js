@@ -142,9 +142,8 @@ let document_loaded =
     else (
       let loaded = Async_kernel.Ivar.create () in
       let handler evt =
-        if
-          (not (js_string_compare ready_state_change evt##._type))
-          || js_string_compare complete Dom_html.document##.readyState
+        if (not (js_string_compare ready_state_change evt##._type))
+        || js_string_compare complete Dom_html.document##.readyState
         then Async_kernel.Ivar.fill_if_empty loaded ();
         Js._true
       in
