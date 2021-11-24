@@ -175,7 +175,7 @@ let%expect_test _ =
           ((rpc_error (Connection_closed ("RPC transport stopped")))
            (connection_description
             (websocket (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))
-           (rpc_tag send-string) (rpc_version 1)) |}];
+           (rpc_name send-string) (rpc_version 1)) |}];
     (* successful connection *)
     let conn = read_new connection_pipe in
     print_when_connection_established_exn conn ~f:(fun (_ : Rpc.Connection.t) ->
