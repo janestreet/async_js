@@ -1,11 +1,29 @@
-open Core
+open! Core
+open! Async_rpc_kernel
 
-module Rpc = Async_rpc_kernel.Persistent_connection.Make (struct
-    module Address = Host_and_port
+module Uri = struct
+  module T = struct
+    include Uri
 
-    type t = Rpc.Connection.t
+    let to_string s = Uri.to_string s
+  end
 
-    let close t = Rpc.Connection.close t
-    let is_closed t = Rpc.Connection.is_closed t
-    let close_finished t = Rpc.Connection.close_finished t
-  end)
+  include T
+  include Sexpable.Of_stringable (T)
+end
+
+module Rpc = struct
+  include Persistent_connection.Rpc
+
+  let create_from_uri = Persistent_connection.Rpc.create ~address:(module Uri)
+
+  let create_from_uri_option =
+    Persistent_connection.Rpc.create
+      ~address:
+        (module struct
+          type t = Uri.t option [@@deriving equal, sexp]
+        end)
+  ;;
+end
+
+module Versioned_rpc = Async_rpc_kernel.Persistent_connection.Versioned_rpc
