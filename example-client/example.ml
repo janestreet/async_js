@@ -60,7 +60,7 @@ let view state =
                  ; Attr.create "value" state.value
                  ; Attr.id "entry"
                  ])
-            []
+            ()
         ; Node.button
             ~attr:(Attr.on_click (fun _e -> inject Set_value))
             [ Node.text "set the value" ]

@@ -119,11 +119,11 @@ module Websocket_connection = struct
 
   let connect_websocket url ~from_server ~to_server =
     match new%js WebSockets.webSocket (Js.string (Uri.to_string url)) with
-    | exception Js.Error exn ->
+    | exception Js_error.Exn exn ->
       (* e.g. SECURITY_ERR, though note that e.g. connecting to ws:// from a https:// page
          in chrome seems to manifest as successful construction but immediate closure
          (see below).  *)
-      return (Or_error.error_string (Js.to_string exn##.message))
+      return (Or_error.error_string (Js_error.message exn))
     | exception exn -> return (Or_error.of_exn exn)
     | websocket ->
       let connected_ivar = Ivar.create () in

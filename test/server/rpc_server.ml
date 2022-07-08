@@ -12,7 +12,7 @@ let implementation_close_connection =
   Rpc.Rpc.implement' Async_js_test_lib.Rpcs.close_connection (fun conn () ->
     Log.Global.debug_s [%message "Got request for close_connection"];
     don't_wait_for
-      (let%bind () = Clock.after Time.Span.second in
+      (let%bind () = Clock.after Time_float.Span.second in
        Rpc.Connection.close
          ~reason:(Info.of_string "got request to close from client")
          conn))
@@ -106,7 +106,7 @@ let dispatch_and_print ~client s =
 let wait_for_the_page_to_be_loaded client =
   match%map
     let the_page_should_load_in_much_less_time_than_this_even_on_hydra =
-      Time.Span.of_sec 30.
+      Time_float.Span.of_sec 30.
     in
     Clock.with_timeout
       the_page_should_load_in_much_less_time_than_this_even_on_hydra

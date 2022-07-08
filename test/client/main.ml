@@ -33,10 +33,8 @@ let wrap_callback f =
       (let%map sexp =
          match%map
            Monitor.try_with
-             ~run:
-               `Schedule
-             ~rest:
-               `Log
+             ~run:`Schedule
+             ~rest:`Log
              ~extract_exn:true
              (fun () -> f arguments)
          with
@@ -45,11 +43,10 @@ let wrap_callback f =
          | Error exn ->
            let sexp =
              match exn with
-             | Js.Error e ->
+             | Js_error.Exn e ->
                Sexp.List
-                 [ Sexp.Atom (Js.to_string e##toString)
-                 ; Sexp.Atom
-                     (Js.Optdef.case e##.stack (fun () -> "no-stack") Js.to_string)
+                 [ Sexp.Atom (Js_error.to_string e)
+                 ; Sexp.Atom (Option.value (Js_error.stack e) ~default:"no-stack")
                  ]
              | (_ : Exn.t) -> Exn.sexp_of_t exn
            in

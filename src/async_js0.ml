@@ -6,10 +6,7 @@ open Js_of_ocaml
 
 let sleep d = Clock_ns.after (Time_ns.Span.of_sec d)
 let yield () = Scheduler.yield (Scheduler.t ())
-
-let extract_js_error (exn : exn) : Js.error Js.t option =
-  Js.Opt.to_option (Js.js_error_of_exn exn)
-;;
+let extract_js_error (exn : exn) : Js_error.t option = Js_error.of_exn exn
 
 let run =
   let module State = struct
@@ -50,7 +47,7 @@ let run =
       in
       Option.iter (Scheduler.uncaught_exn_unwrapped t) ~f:(fun (exn, _sexp) ->
         match Async_kernel.Monitor.extract_exn exn with
-        | Js.Error err -> Js.raise_js_error err
+        | Js_error.Exn err -> Js_error.raise_ err
         | exn ->
           (match extract_js_error exn with
            | None -> raise exn
@@ -62,7 +59,7 @@ let run =
                 backtrace with good sourcemap support.
                 The name of this javascript error is probably not meaningful which is why
                 we first output the serialization of ocaml exception. *)
-             Js.raise_js_error err));
+             Js_error.raise_ err));
       (match next_wakeup with
        | No_wakeup -> state := Idle
        | Soon ->
@@ -92,7 +89,7 @@ let run =
 let log name exn =
   let exn =
     match Async_kernel.Monitor.extract_exn exn with
-    | Js.Error err -> `Js err
+    | Js_error.Exn err -> `Js err
     | exn ->
       (match extract_js_error exn with
        | None -> `Exn exn
