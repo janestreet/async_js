@@ -8,7 +8,9 @@ module Expect_test_config = struct
   let run f =
     let result = f () in
     loop_while
-      (Js.wrap_callback (fun () -> Js.bool (not (Deferred.is_determined result))));
+      (Js.wrap_callback (fun () ->
+         Async_kernel_scheduler.Expert.run_cycles_until_no_jobs_remain ();
+         Js.bool (not (Deferred.is_determined result))));
     match Deferred.peek result with
     | Some result -> result
     | None -> assert false

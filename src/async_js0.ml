@@ -6,7 +6,46 @@ open Js_of_ocaml
 
 let sleep d = Clock_ns.after (Time_ns.Span.of_sec d)
 let yield () = Scheduler.yield (Scheduler.t ())
-let extract_js_error (exn : exn) : Js_error.t option = Js_error.of_exn exn
+
+let rec extract_js_error (exn : exn) : (string list * Js_error.t) option =
+  match exn with
+  | Exn.Reraised (msg, exn) ->
+    (match extract_js_error exn with
+     | Some (messages, js_error) -> Some (msg :: messages, js_error)
+     | None -> None)
+  | exn ->
+    (match Js_error.of_exn exn with
+     | Some js_error -> Some ([], js_error)
+     | None -> None)
+;;
+
+let pretty_print_exception name exn =
+  let exn = Async_kernel.Monitor.extract_exn exn in
+  let classification =
+    match exn with
+    | Js_error.Exn err -> `Js err
+    | exn ->
+      (match extract_js_error exn with
+       | None -> `Exn exn
+       | Some err -> `Js_and_exn (exn, err))
+  in
+  match classification with
+  | `Js err -> Firebug.console##error_2 (Js.string name) err
+  | `Exn exn -> Firebug.console##error_2 (Js.string name) (Js.string (Exn.to_string exn))
+  | `Js_and_exn (exn, (messages, err)) ->
+    (match messages with
+     | [] -> Firebug.console##group (Js.string name)
+     | hd :: rest ->
+       Firebug.console##group (Js.string hd);
+       Firebug.console##log (Js.string name);
+       List.iter rest ~f:(fun message -> Firebug.console##error (Js.string message)));
+    (* We first output the stringified ocaml exception *)
+    Firebug.console##groupCollapsed (Js.string "OCaml Exception");
+    Firebug.console##log (Js.string (Exn.to_string exn));
+    Firebug.console##groupEnd;
+    Firebug.console##error err;
+    Firebug.console##groupEnd
+;;
 
 let run =
   let module State = struct
@@ -49,12 +88,11 @@ let run =
         match Async_kernel.Monitor.extract_exn exn with
         | Js_error.Exn err -> Js_error.raise_ err
         | exn ->
-          (match extract_js_error exn with
+          (match Js_error.of_exn exn with
            | None -> raise exn
            | Some err ->
              (* Hack to get a better backtrace *)
-             (* We first output the stringified ocaml exception *)
-             Firebug.console##error (Js.string (Exn.to_string exn));
+             pretty_print_exception "Error:" exn;
              (* And then raise the embedded javascript error that provides a proper
                 backtrace with good sourcemap support.
                 The name of this javascript error is probably not meaningful which is why
@@ -86,22 +124,6 @@ let run =
     | State.Running | State.Will_run_soon -> ()
 ;;
 
-let log name exn =
-  let exn =
-    match Async_kernel.Monitor.extract_exn exn with
-    | Js_error.Exn err -> `Js err
-    | exn ->
-      (match extract_js_error exn with
-       | None -> `Exn exn
-       | Some err -> `Js_and_exn (exn, err))
-  in
-  match exn with
-  | `Js err -> Firebug.console##error_2 (Js.string name) err
-  | `Exn exn -> Firebug.console##error_2 (Js.string name) (Js.string (Exn.to_string exn))
-  | `Js_and_exn (exn, err) ->
-    Firebug.console##error_3 (Js.string name) (Js.string (Exn.to_string exn)) err
-;;
-
 let initialized_ref = ref false
 
 let initialization =
@@ -111,10 +133,11 @@ let initialization =
      Scheduler.set_job_queued_hook t (fun _ -> run ());
      Scheduler.set_event_added_hook t (fun _ -> run ());
      Scheduler.set_thread_safe_external_job_hook t run;
-     Async_kernel.Monitor.Expert.try_with_log_exn := log "Async_kernel: Monitor.try_with";
+     Async_kernel.Monitor.Expert.try_with_log_exn
+     := pretty_print_exception "Async_kernel: Monitor.try_with";
      Async_kernel.Monitor.detach_and_iter_errors
        Async_kernel.Monitor.main
-       ~f:(log "Async_kernel: Unhandled exception");
+       ~f:(pretty_print_exception "Async_kernel: Unhandled exception");
      run ())
 ;;
 
