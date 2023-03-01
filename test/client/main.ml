@@ -6,7 +6,7 @@ open Js_of_ocaml
 let output = ref []
 
 let get_output () =
-  Caml.flush_all ();
+  Stdlib.flush_all ();
   let res = String.concat ~sep:"" (List.rev !output) in
   output := [];
   res

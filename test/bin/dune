@@ -1,0 +1,8 @@
+(executables (names rpc_server)
+ (libraries core_unix.command_unix simple_web_server async_js_test_lib
+  cohttp_static_handler)
+ (preprocess (pps ppx_jane)))
+
+(rule (targets embedded_files.ml embedded_files.mli)
+ (deps %{bin:ocaml-embed-file} ../client/main.bc.js)
+ (action (bash "%{deps} -output embedded_files")))

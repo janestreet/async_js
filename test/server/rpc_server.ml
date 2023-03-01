@@ -30,14 +30,18 @@ let start_http_server () =
         [%message "Error encountered" (inet : Socket.Address.Inet.t) (err : Exn.t)]
     in
     let http_handler =
-      Cohttp_static_handler.Single_page_handler.(
-        embedded_js_handler
-          default
-          ~css:[]
-          ~scripts:[ Embedded_files.main_dot_bc_dot_js ]
-          ~on_unknown_url:`Not_found)
+      let open Cohttp_static_handler in
+      Single_page_handler.create_handler
+        Single_page_handler.default
+        ~assets:
+          [ Asset.local
+              Asset.Kind.javascript
+              (Asset.What_to_serve.embedded ~contents:Embedded_files.main_dot_bc_dot_js)
+          ]
+        ~on_unknown_url:`Not_found
     in
     Rpc_websocket_jane.Rpc.serve
+      ~authorize:Krb_http.Authorize.accept_all
       ()
       ~implementations
       ~initial_connection_state:(fun () _ _ conn ->

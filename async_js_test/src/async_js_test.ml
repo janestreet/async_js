@@ -17,6 +17,5 @@ module Expect_test_config = struct
   ;;
 
   let sanitize s = s
-  let flushed () = true
   let upon_unreleasable_issue = Expect_test_config.upon_unreleasable_issue
 end
