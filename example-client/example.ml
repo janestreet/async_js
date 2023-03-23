@@ -47,22 +47,24 @@ let view state =
   let open Vdom in
   Node.body
     [ Node.div
-        ~attr:
-          (Attr.many_without_merge
-             [ Attr.style Css_gen.(width Length.percent100 @> height Length.percent100)
-             ; Attr.create "tabindex" "1"
-             ])
+        ~attrs:
+          [ Attr.many_without_merge
+              [ Attr.style Css_gen.(width Length.percent100 @> height Length.percent100)
+              ; Attr.create "tabindex" "1"
+              ]
+          ]
         [ Node.h2 [ Node.text "Value" ]
         ; Node.input
-            ~attr:
-              (Attr.many_without_merge
-                 [ Attr.create "type" "text"
-                 ; Attr.create "value" state.value
-                 ; Attr.id "entry"
-                 ])
+            ~attrs:
+              [ Attr.many_without_merge
+                  [ Attr.create "type" "text"
+                  ; Attr.create "value" state.value
+                  ; Attr.id "entry"
+                  ]
+              ]
             ()
         ; Node.button
-            ~attr:(Attr.on_click (fun _e -> inject Set_value))
+            ~attrs:[ Attr.on_click (fun _e -> inject Set_value) ]
             [ Node.text "set the value" ]
         ]
     ]
@@ -106,7 +108,8 @@ let () =
      >>| fun res ->
      let view, value_opt =
        match res with
-       | Error e -> Vdom.((fun _ -> Node.body [ Node.text (Error.to_string_hum e) ]), None)
+       | Error e ->
+         Vdom.((fun _ -> Node.body [ Node.text (Error.to_string_hum e) ]), None)
        | Ok value_opt -> view, value_opt
      in
      run_app

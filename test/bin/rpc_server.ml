@@ -37,6 +37,7 @@ let start_http_server ~http_settings () =
   in
   Simple_web_server.create
     ~should_log_hosting_url:true
+    ~authorize:Krb_http.Authorize.accept_all
     ~rpc_config:
       (Simple_web_server.Rpc_config.create
          ~implementations

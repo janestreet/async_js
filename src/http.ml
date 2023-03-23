@@ -114,8 +114,7 @@ let request
             | Document -> Ok (File.CoerceTo.document req##.response)
             | JSON -> Ok (File.CoerceTo.json req##.response)
             | Text -> get_text_contents_or_error ()
-            | Default ->
-              Or_error.map (get_text_contents_or_error ()) ~f:Js.to_string
+            | Default -> Or_error.map (get_text_contents_or_error ()) ~f:Js.to_string
           in
           let get_header s =
             Opt.case

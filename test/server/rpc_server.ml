@@ -165,9 +165,7 @@ let%expect_test _ =
     let%bind () = dispatch_and_print (sprintf "wss://localhost:%d/" web_port) in
     [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
     (* immediate failure *)
-    let%bind () =
-      dispatch_and_print (sprintf "ws://shouldnt-resolve.fakedomain.com/")
-    in
+    let%bind () = dispatch_and_print (sprintf "ws://shouldnt-resolve.fakedomain.com/") in
     [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
     (* successful connection, close after handshake *)
     let conn = read_new connection_pipe in
