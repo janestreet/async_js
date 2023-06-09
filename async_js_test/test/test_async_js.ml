@@ -18,7 +18,7 @@ let%expect_test "ivar" =
     print_endline "hello";
     return ()
   in
-  Ivar.fill ivar ();
+  Ivar.fill_exn ivar ();
   let%bind () = x in
   [%expect {| hello |}];
   return ()
