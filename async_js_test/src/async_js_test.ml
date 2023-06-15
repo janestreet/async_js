@@ -6,13 +6,14 @@ module Expect_test_config = struct
   external loop_while : (unit -> bool Js.t) Js.callback -> unit = "loop_while"
 
   let run f =
-    let result = f () in
+    let result = Monitor.try_with f in
     loop_while
       (Js.wrap_callback (fun () ->
          Async_kernel_scheduler.Expert.run_cycles_until_no_jobs_remain ();
          Js.bool (not (Deferred.is_determined result))));
     match Deferred.peek result with
-    | Some result -> result
+    | Some (Ok result) -> result
+    | Some (Error exn) -> raise exn
     | None -> assert false
   ;;
 

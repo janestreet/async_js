@@ -59,3 +59,11 @@ let%expect_test "rpc" =
   [%expect {| world |}];
   return ()
 ;;
+
+(* The [uncaught_exn] below is intended. Raising from a test used to hang the inline test
+   runner. This test raises on purpose to prevent regressions. *)
+let%expect_test "raise" =
+  let%bind () = return () in
+  raise_s [%message "fail!"]
+[@@expect.uncaught_exn {| (monitor.ml.Error fail!) |}]
+;;
