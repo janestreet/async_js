@@ -170,9 +170,9 @@ module Websocket_connection = struct
       (match websocket##.readyState with
        | CONNECTING ->
          websocket##.onopen
-         := Dom.handler (fun (_ : _ Dom.event Js.t) ->
-           connected ();
-           Js._false)
+           := Dom.handler (fun (_ : _ Dom.event Js.t) ->
+                connected ();
+                Js._false)
        | OPEN -> connected ()
        | CLOSING | CLOSED ->
          (* e.g., Refused to connect to ws: because it violates Content Security Policy *)
@@ -184,9 +184,9 @@ module Websocket_connection = struct
          still listen to [onerror] to prevent the error from leaking to uncontrolled
          context *)
       websocket##.onerror
-      := Dom.handler (fun (_ : _ Dom.event Js.t) ->
-        Async_js_debug.log_s [%message "websocket encountered unexpected error"];
-        Js._false);
+        := Dom.handler (fun (_ : _ Dom.event Js.t) ->
+             Async_js_debug.log_s [%message "websocket encountered unexpected error"];
+             Js._false);
       websocket##.onmessage := Dom.handler onmessage;
       websocket##.onclose := Dom.handler onclose;
       let connected_deferred = Ivar.read connected_ivar in

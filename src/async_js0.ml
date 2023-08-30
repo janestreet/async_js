@@ -134,7 +134,7 @@ let initialization =
      Scheduler.set_event_added_hook t (fun _ -> run ());
      Scheduler.set_thread_safe_external_job_hook t run;
      Async_kernel.Monitor.Expert.try_with_log_exn
-     := pretty_print_exception "Async_kernel: Monitor.try_with";
+       := pretty_print_exception "Async_kernel: Monitor.try_with";
      Async_kernel.Monitor.detach_and_iter_errors
        Async_kernel.Monitor.main
        ~f:(pretty_print_exception "Async_kernel: Unhandled exception");
@@ -163,7 +163,7 @@ let document_loaded =
       let loaded = Async_kernel.Ivar.create () in
       let handler evt =
         if (not (js_string_compare ready_state_change evt##._type))
-        || js_string_compare complete Dom_html.document##.readyState
+           || js_string_compare complete Dom_html.document##.readyState
         then Async_kernel.Ivar.fill_if_empty loaded ();
         Js._true
       in

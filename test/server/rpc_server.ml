@@ -79,9 +79,9 @@ let rec cleanup =
   | List l ->
     List
       (List.map l ~f:(function
-         | List [ Atom name; _ ] when cleanup_name name ->
-           List [ Atom name; Atom (String.uppercase name) ]
-         | x -> cleanup x))
+        | List [ Atom name; _ ] when cleanup_name name ->
+          List [ Atom name; Atom (String.uppercase name) ]
+        | x -> cleanup x))
 ;;
 
 let dispatch_and_print ~client s =
