@@ -131,7 +131,12 @@ let print_when_connection_established_exn conn ~f =
 ;;
 
 let%expect_test _ =
-  let pipe_must_be_empty pipe = [%test_result: _ option] ~expect:None (Pipe.peek pipe) in
+  let pipe_must_be_empty pipe =
+    match Pipe.peek pipe with
+    | None -> ()
+    | Some connection ->
+      raise_s [%message "Unexpected rpc connection" (connection : Rpc.Connection.t)]
+  in
   let read_new pipe =
     pipe_must_be_empty pipe;
     Pipe.read pipe
@@ -148,20 +153,20 @@ let%expect_test _ =
     [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
     (* synchronous failure (invalid url) *)
     let%bind () = dispatch_and_print "ws://in valid/" in
-    [%expect {|
-          "WebSocket connection failed (Abnormal_closure)" |}];
-    (* synchronous failure (invalid url) *)
+    [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
+    (* null-byte at the end of a URL looks like it gets stripped now?
+       This used to fail but now it's ok *)
+    let conn = read_new connection_pipe in
+    print_when_connection_established_exn conn ~f:Rpc.Connection.close;
     let%bind () = dispatch_and_print (sprintf "ws://localhost:%d/\000" web_port) in
-    let%bind () =
-      let output = [%expect.output] in
-      String.substr_replace_all output ~pattern:(Int.to_string web_port) ~with_:"PORT"
-      |> print_endline;
-      return ()
-    in
     [%expect
       {|
-          "Failed to construct 'WebSocket': The URL 'ws://localhost:PORT/%00' is invalid." |}];
-    (* immediate failure *)
+      New connection
+      ((rpc_error (Connection_closed ("RPC transport stopped")))
+       (connection_description
+        (websocket
+         (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /%00)))))
+       (rpc_name send-string) (rpc_version 1)) |}];
     let%bind () = dispatch_and_print (sprintf "wss://localhost:%d/" web_port) in
     [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
     (* immediate failure *)
@@ -173,11 +178,11 @@ let%expect_test _ =
     let%bind () = dispatch_and_print (sprintf "ws://localhost:%d/" web_port) in
     [%expect
       {|
-          New connection
-          ((rpc_error (Connection_closed ("RPC transport stopped")))
-           (connection_description
-            (websocket (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))
-           (rpc_name send-string) (rpc_version 1)) |}];
+      New connection
+      ((rpc_error (Connection_closed ("RPC transport stopped")))
+       (connection_description
+        (websocket (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))
+       (rpc_name send-string) (rpc_version 1)) |}];
     (* successful connection *)
     let conn = read_new connection_pipe in
     print_when_connection_established_exn conn ~f:(fun (_ : Rpc.Connection.t) ->

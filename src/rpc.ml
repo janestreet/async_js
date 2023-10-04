@@ -12,11 +12,11 @@ end
 module Websocket_connection = struct
   module T = Async_rpc_kernel.Rpc.Connection
 
-  type ('rest, 'implementations) client_t =
+  type 'rest client_t =
     ?uri:Uri.t
     -> ?heartbeat_config:T.Heartbeat_config.t
     -> ?description:Info.t
-    -> ?implementations:'implementations T.Client_implementations.t
+    -> ?implementations:T.Client_implementations.t
     -> 'rest
 
   module Close_code : sig
@@ -234,7 +234,7 @@ module Websocket_connection = struct
         [%message "websocket" (description : (Info.t option[@sexp.option])) (uri : Uri.t)]
     in
     let make_connection transport =
-      let create { T.Client_implementations.connection_state; implementations } =
+      let create (T.Client_implementations.T { connection_state; implementations }) =
         T.create
           transport
           ?heartbeat_config
