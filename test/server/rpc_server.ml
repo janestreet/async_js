@@ -4,13 +4,13 @@ open Cohttp_jane
 
 let implementation_send_string =
   Rpc.Rpc.implement' Async_js_test_lib.Rpcs.send_string (fun (_ : Rpc.Connection.t) str ->
-    Log.Global.debug_s [%message "Got request for send_string: " ~_:str];
+    [%log.global.debug "Got request for send_string: " ~_:str];
     str)
 ;;
 
 let implementation_close_connection =
   Rpc.Rpc.implement' Async_js_test_lib.Rpcs.close_connection (fun conn () ->
-    Log.Global.debug_s [%message "Got request for close_connection"];
+    [%log.global.debug "Got request for close_connection"];
     don't_wait_for
       (let%bind () = Clock.after Time_float.Span.second in
        Rpc.Connection.close
@@ -26,8 +26,7 @@ let start_http_server () =
   in
   let%bind server =
     let on_handler_error inet err =
-      Log.Global.error_s
-        [%message "Error encountered" (inet : Socket.Address.Inet.t) (err : Exn.t)]
+      [%log.global.error "Error encountered" (inet : Socket.Address.Inet.t) (err : Exn.t)]
     in
     let http_handler =
       let open Cohttp_static_handler in
