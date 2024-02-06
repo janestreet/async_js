@@ -1,3 +1,12 @@
-(library (name async_js_test) (public_name async_js.async_test)
- (libraries js_of_ocaml async_kernel async_js) (c_names c_stubs)
- (js_of_ocaml (javascript_files ./runtime.js)) (preprocess (pps ppx_jane)))
+(library
+ (foreign_stubs
+  (language c)
+  (names c_stubs))
+ (name async_js_test)
+ (public_name async_js.async_test)
+ (libraries js_of_ocaml async_kernel async_js
+   bonsai_test_handle_garbage_collector)
+ (js_of_ocaml
+  (javascript_files ./runtime.js))
+ (preprocess
+  (pps ppx_jane)))

@@ -11,7 +11,9 @@ module Expect_test_config = struct
     if is_in_browser
     then (fun f ->
       Async_js.init ();
-      don't_wait_for (f ()))
+      don't_wait_for
+        (let%map.Deferred () = f () in
+         Bonsai_test_handle_garbage_collector.garbage_collect ()))
     else
       fun f ->
       let result = Monitor.try_with f in
@@ -19,6 +21,7 @@ module Expect_test_config = struct
         (Js.wrap_callback (fun () ->
            Async_kernel_scheduler.Expert.run_cycles_until_no_jobs_remain ();
            Js.bool (not (Deferred.is_determined result))));
+      Bonsai_test_handle_garbage_collector.garbage_collect ();
       match Deferred.peek result with
       | Some (Ok result) -> result
       | Some (Error exn) -> raise exn

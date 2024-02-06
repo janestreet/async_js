@@ -1,0 +1,6 @@
+(library
+ (name bonsai_test_handle_garbage_collector)
+ (public_name async_js.test_handle_garbage_collector)
+ (libraries core)
+ (preprocess
+  (pps ppx_jane)))
