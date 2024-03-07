@@ -8,6 +8,7 @@ module Rpcs = struct
       ~version:1
       ~bin_query:String.bin_t
       ~bin_response:String.bin_t
+      ~include_in_error_count:Only_on_exn
   ;;
 
   let close_connection =
@@ -16,6 +17,7 @@ module Rpcs = struct
       ~version:1
       ~bin_query:Unit.bin_t
       ~bin_response:Unit.bin_t
+      ~include_in_error_count:Only_on_exn
   ;;
 end
 

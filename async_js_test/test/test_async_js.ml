@@ -32,6 +32,7 @@ let%expect_test "rpc" =
       ~version:0
       ~bin_query:[%bin_type_class: string]
       ~bin_response:[%bin_type_class: unit]
+      ~include_in_error_count:Only_on_exn
   in
   let to_server = Pipe.create () in
   let to_client = Pipe.create () in

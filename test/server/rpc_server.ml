@@ -1,6 +1,6 @@
 open Core
 open Async
-open Cohttp_jane
+open! Cohttp_jane
 
 let implementation_send_string =
   Rpc.Rpc.implement' Async_js_test_lib.Rpcs.send_string (fun (_ : Rpc.Connection.t) str ->
@@ -46,7 +46,7 @@ let start_http_server () =
       ~initial_connection_state:(fun () _ _ conn ->
         Pipe.write_without_pushback writer conn;
         conn)
-      ~auth_scheme:Authorizer.Authentication_scheme.none
+      ~auth_scheme:Cohttp_jane_krb.Authorizer.Authentication_scheme.none
       ~http_handler:(fun () -> http_handler)
       ~where_to_listen:Tcp.Where_to_listen.of_port_chosen_by_os
       ~on_handler_error:(`Call on_handler_error)
