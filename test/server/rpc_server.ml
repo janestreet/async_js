@@ -165,7 +165,8 @@ let%expect_test _ =
        (connection_description
         (websocket
          (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /%00)))))
-       (rpc_name send-string) (rpc_version 1)) |}];
+       (rpc_name send-string) (rpc_version 1))
+      |}];
     let%bind () = dispatch_and_print (sprintf "wss://localhost:%d/" web_port) in
     [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
     (* immediate failure *)
@@ -181,7 +182,8 @@ let%expect_test _ =
       ((rpc_error (Connection_closed ("RPC transport stopped")))
        (connection_description
         (websocket (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))
-       (rpc_name send-string) (rpc_version 1)) |}];
+       (rpc_name send-string) (rpc_version 1))
+      |}];
     (* successful connection *)
     let conn = read_new connection_pipe in
     print_when_connection_established_exn conn ~f:(fun (_ : Rpc.Connection.t) ->
@@ -189,6 +191,7 @@ let%expect_test _ =
     let%bind () = dispatch_and_print (sprintf "ws://localhost:%d/" web_port) in
     [%expect {|
       New connection
-      "OK from client" |}];
+      "OK from client"
+      |}];
     return ())
 ;;

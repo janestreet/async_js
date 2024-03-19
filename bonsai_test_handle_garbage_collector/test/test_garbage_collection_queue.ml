@@ -5,10 +5,11 @@ let%expect_test "Enqueue + garbage collect" =
   register_cleanup (fun () -> print_endline "1");
   register_cleanup (fun () -> print_endline "2");
   register_cleanup (fun () -> print_endline "3");
-  [%expect];
+  [%expect {| |}];
   garbage_collect ();
   [%expect {|
     1
     2
-    3 |}]
+    3
+    |}]
 ;;
