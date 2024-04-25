@@ -15,7 +15,7 @@ depends: [
   "async_rpc_kernel"
   "core"
   "ppx_jane"
-  "dune"             {>= "2.0.0"}
+  "dune"             {>= "3.11.0"}
   "js_of_ocaml"      {>= "5.1.1" & < "5.7.0"}
   "js_of_ocaml-ppx"  {>= "5.1.1" & < "5.7.0"}
   "uri"              {>= "3.0.0"}
