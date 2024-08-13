@@ -49,6 +49,7 @@ let%expect_test "rpc" =
     Rpc.Implementations.create_exn
       ~implementations:[ Rpc.Rpc.implement' rpc (fun () text -> print_endline text) ]
       ~on_unknown_rpc:`Continue
+      ~on_exception:Log_on_background_exn
   in
   don't_wait_for
     (let%bind server_conn = one_connection (Some implementations) to_server to_client in
@@ -66,5 +67,9 @@ let%expect_test "rpc" =
 let%expect_test "raise" =
   let%bind () = return () in
   raise_s [%message "fail!"]
-  [@@expect.uncaught_exn {| (monitor.ml.Error fail!) |}]
+[@@expect.uncaught_exn
+  {|
+  (monitor.ml.Error fail!
+    ("Caught by monitor at file \"lib/async_js_test/src/async_js_test.ml\", line LINE, characters C1-C2"))
+  |}]
 ;;

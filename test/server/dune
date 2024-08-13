@@ -1,7 +1,8 @@
 (library
  (name rpc_server)
- (libraries async_js_test_lib cohttp_static_handler rpc_websocket_jane
-   web_testing)
+ (libraries async async_js_test_lib cohttp-async cohttp_jane cohttp_jane_krb
+   cohttp_static_handler core krb_http rpc_websocket_jane uri web_testing
+   yojson)
  (preprocess
   (pps ppx_jane)))
 

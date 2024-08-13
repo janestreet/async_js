@@ -1,6 +1,6 @@
 (executables
  (modes byte exe)
  (names main)
- (libraries async_js_test_lib async_js js_of_ocaml uri)
+ (libraries async_js_test_lib async_js async_kernel core js_of_ocaml uri)
  (preprocess
   (pps js_of_ocaml-ppx ppx_jane)))

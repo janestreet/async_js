@@ -29,10 +29,13 @@ let pretty_print_exception name exn =
        | None -> `Exn exn
        | Some err -> `Js_and_exn (exn, err))
   in
-  match classification with
-  | `Js err -> Firebug.console##error_2 (Js.string name) err
-  | `Exn exn -> Firebug.console##error_2 (Js.string name) (Js.string (Exn.to_string exn))
-  | `Js_and_exn (exn, (messages, err)) ->
+  match !Backtrace.elide, classification with
+  | true, _ ->
+    Firebug.console##error_2 (Js.string name) (Js.string "<STACK TRACE ELIDED>")
+  | false, `Js err -> Firebug.console##error_2 (Js.string name) err
+  | false, `Exn exn ->
+    Firebug.console##error_2 (Js.string name) (Js.string (Exn.to_string exn))
+  | false, `Js_and_exn (exn, (messages, err)) ->
     (match messages with
      | [] -> Firebug.console##group (Js.string name)
      | hd :: rest ->
@@ -126,6 +129,22 @@ let run =
 
 let initialized_ref = ref false
 
+let on_unhandled_exn_ref =
+  ref (pretty_print_exception "Async_kernel: Unhandled exception")
+;;
+
+let add_on_unhandled_exn_handler ~f =
+  let prev_on_unhandled_exn = !on_unhandled_exn_ref in
+  on_unhandled_exn_ref
+  := fun original_exn ->
+       (try f original_exn with
+        | handler_exn ->
+          pretty_print_exception
+            "Async_kernel: on_unhandled_exn_handler callback raised"
+            handler_exn);
+       prev_on_unhandled_exn original_exn
+;;
+
 let initialization =
   lazy
     (let t = Scheduler.t () in
@@ -134,10 +153,9 @@ let initialization =
      Scheduler.set_event_added_hook t (fun _ -> run ());
      Scheduler.set_thread_safe_external_job_hook t run;
      Async_kernel.Monitor.Expert.try_with_log_exn
-       := pretty_print_exception "Async_kernel: Monitor.try_with";
-     Async_kernel.Monitor.detach_and_iter_errors
-       Async_kernel.Monitor.main
-       ~f:(pretty_print_exception "Async_kernel: Unhandled exception");
+     := pretty_print_exception "Async_kernel: Monitor.try_with";
+     Async_kernel.Monitor.detach_and_iter_errors Async_kernel.Monitor.main ~f:(fun exn ->
+       !on_unhandled_exn_ref exn);
      run ())
 ;;
 
@@ -145,10 +163,6 @@ let init () = force initialization
 let initialized () = !initialized_ref
 
 let document_loaded =
-  let js_string_compare s =
-    let compare_using_javascript_triple_equal_for_strings = phys_equal in
-    compare_using_javascript_triple_equal_for_strings (Js.string s)
-  in
   let ready_state_change = "readystatechange" in
   let complete = "complete" in
   let readystatechange_ev = Dom.Event.make ready_state_change in
@@ -157,13 +171,13 @@ let document_loaded =
       (Dom_html.addEventListener target evt handler Js._false : Dom.event_listener_id)
   in
   fun () ->
-    if js_string_compare complete Dom_html.document##.readyState
+    if Js.equals (Js.string complete) Dom_html.document##.readyState
     then Async_kernel.Deferred.unit
     else (
       let loaded = Async_kernel.Ivar.create () in
       let handler evt =
-        if (not (js_string_compare ready_state_change evt##._type))
-           || js_string_compare complete Dom_html.document##.readyState
+        if (not (Js.equals (Js.string ready_state_change) evt##._type))
+           || Js.equals (Js.string complete) Dom_html.document##.readyState
         then Async_kernel.Ivar.fill_if_empty loaded ();
         Js._true
       in

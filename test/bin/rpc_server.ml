@@ -20,7 +20,10 @@ let implementation_close_connection =
 let start_http_server ~http_settings () =
   let implementations = [ implementation_send_string; implementation_close_connection ] in
   let implementations =
-    Rpc.Implementations.create_exn ~implementations ~on_unknown_rpc:`Raise
+    Rpc.Implementations.create_exn
+      ~implementations
+      ~on_unknown_rpc:`Raise
+      ~on_exception:Log_on_background_exn
   in
   let respond _ =
     let open Cohttp_static_handler in

@@ -61,40 +61,37 @@ let () =
   Async_js.init ();
   Sys_js.set_channel_flusher stdout (fun s -> output := s :: !output);
   Dom_html.window##.onload
-    := Dom.handler (fun (_ : 'a #Dom.event Js.t) ->
-         let (_ : Dom.event_listener_id) =
-           Dom_html.addEventListener
-             Dom_html.window
-             Dom_html.Event.error
-             (Dom.handler (fun e ->
-                print_endline
-                  (sprintf
-                     "Error: %s: %s"
-                     (Js.to_string e##._type)
-                     (Js.Optdef.case
-                        (Obj.magic e)##.message
-                        (fun () -> "no message")
-                        Js.to_string));
-                Js._false))
-             Js._false
-         in
-         (* We export a javascript callback that will then be triggered from the server side. *)
-         Js.export
-           Async_js_test_lib.Callback_function.(name (Open_rpc_and_wait ()))
-           (wrap_callback (fun arguments ->
-              let uri = Js.Unsafe.get arguments 0 |> Js.to_string in
-              let open Deferred.Or_error.Let_syntax in
-              let%bind connection = open_connection ~uri in
-              let%bind (_ : string) =
-                Rpc.Rpc.dispatch
-                  Async_js_test_lib.Rpcs.send_string
-                  connection
-                  "some string"
-              in
-              (* Wait a bit so that the connection is not immediately closed *)
-              let%bind.Deferred () = Clock_ns.after (Time_ns.Span.of_sec 1.0) in
-              Deferred.Or_error.return [%sexp "OK from client"]));
-         (* The server side will wait for the text 'Ready' to appear and only then start the testing. *)
-         Dom_html.document##.body##.textContent := Js.Opt.return (Js.string "Ready");
-         Js._true)
+  := Dom.handler (fun (_ : 'a #Dom.event Js.t) ->
+       let (_ : Dom.event_listener_id) =
+         Dom_html.addEventListener
+           Dom_html.window
+           Dom_html.Event.error
+           (Dom.handler (fun e ->
+              print_endline
+                (sprintf
+                   "Error: %s: %s"
+                   (Js.to_string e##._type)
+                   (Js.Optdef.case
+                      (Obj.magic e)##.message
+                      (fun () -> "no message")
+                      Js.to_string));
+              Js._false))
+           Js._false
+       in
+       (* We export a javascript callback that will then be triggered from the server side. *)
+       Js.export
+         Async_js_test_lib.Callback_function.(name (Open_rpc_and_wait ()))
+         (wrap_callback (fun arguments ->
+            let uri = Js.Unsafe.get arguments 0 |> Js.to_string in
+            let open Deferred.Or_error.Let_syntax in
+            let%bind connection = open_connection ~uri in
+            let%bind (_ : string) =
+              Rpc.Rpc.dispatch Async_js_test_lib.Rpcs.send_string connection "some string"
+            in
+            (* Wait a bit so that the connection is not immediately closed *)
+            let%bind.Deferred () = Clock_ns.after (Time_ns.Span.of_sec 1.0) in
+            Deferred.Or_error.return [%sexp "OK from client"]));
+       (* The server side will wait for the text 'Ready' to appear and only then start the testing. *)
+       Dom_html.document##.body##.textContent := Js.Opt.return (Js.string "Ready");
+       Js._true)
 ;;

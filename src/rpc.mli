@@ -14,6 +14,7 @@ module Connection : sig
       i.e. [ws://<address>/]. *)
   type 'rest client_t =
     ?uri:Uri.t
+    -> ?handshake_timeout:Time_ns.Span.t
     -> ?heartbeat_config:Heartbeat_config.t
     -> ?description:Info.t
     -> ?implementations:Client_implementations.t

@@ -7,6 +7,19 @@ module Expect_test_config = struct
 
   let is_in_browser = Js.Optdef.test (Obj.magic Dom_html.document : _ Js.Optdef.t)
 
+  external await_internal
+    :  ((Js.Unsafe.any -> unit) -> unit) Js.callback
+    -> 'a
+    = "caml_wasm_await"
+
+  external await_is_available : unit -> bool = "caml_wasm_await_available"
+
+  let await (type a) (f : (a -> unit) -> unit) : a =
+    await_internal
+      (Js.Unsafe.callback_with_arity 1 (fun resolve ->
+         f (fun x -> Js.Unsafe.fun_call resolve [| Js.Unsafe.inject x |])))
+  ;;
+
   let run =
     if is_in_browser
     then (fun f ->
@@ -14,18 +27,36 @@ module Expect_test_config = struct
       don't_wait_for
         (let%map.Deferred () = f () in
          Bonsai_test_handle_garbage_collector.garbage_collect ()))
-    else
-      fun f ->
-      let result = Monitor.try_with f in
-      loop_while
-        (Js.wrap_callback (fun () ->
-           Async_kernel_scheduler.Expert.run_cycles_until_no_jobs_remain ();
-           Js.bool (not (Deferred.is_determined result))));
-      Bonsai_test_handle_garbage_collector.garbage_collect ();
-      match Deferred.peek result with
-      | Some (Ok result) -> result
-      | Some (Error exn) -> raise exn
-      | None -> assert false
+    else (
+      match Sys.backend_type with
+      | Other "wasm_of_ocaml" when await_is_available () ->
+        fun f ->
+          Async_js.init ();
+          let x =
+            await
+            @@ fun cont ->
+            ignore
+              (let%bind x = Monitor.try_with f in
+               let () = cont x in
+               Deferred.return ()
+               : unit Deferred.t)
+          in
+          Bonsai_test_handle_garbage_collector.garbage_collect ();
+          (match x with
+           | Ok result -> result
+           | Error exn -> raise exn)
+      | _ ->
+        fun f ->
+          let result = Monitor.try_with f in
+          loop_while
+            (Js.wrap_callback (fun () ->
+               Async_kernel_scheduler.Expert.run_cycles_until_no_jobs_remain ();
+               Js.bool (not (Deferred.is_determined result))));
+          Bonsai_test_handle_garbage_collector.garbage_collect ();
+          (match Deferred.peek result with
+           | Some (Ok result) -> result
+           | Some (Error exn) -> raise exn
+           | None -> assert false))
   ;;
 
   let sanitize s = s

@@ -20,4 +20,4 @@ end
 
 module Versioned_rpc :
   Async_rpc_kernel.Persistent_connection.S
-    with type conn = Async_rpc_kernel.Versioned_rpc.Connection_with_menu.t
+  with type conn = Async_rpc_kernel.Versioned_rpc.Connection_with_menu.t

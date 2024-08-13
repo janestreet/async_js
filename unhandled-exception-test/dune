@@ -1,0 +1,6 @@
+(executables
+ (modes byte exe)
+ (names unhandled_exception_test)
+ (libraries async_js async_kernel core js_of_ocaml)
+ (preprocess
+  (pps js_of_ocaml-ppx ppx_jane)))

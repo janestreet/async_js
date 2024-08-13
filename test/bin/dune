@@ -1,8 +1,8 @@
 (executables
  (modes byte exe)
  (names rpc_server)
- (libraries core_unix.command_unix simple_web_server async_js_test_lib
-   cohttp_static_handler)
+ (libraries core_unix.command_unix simple_web_server async async_js_test_lib
+   cohttp_static_handler core http_settings krb_http)
  (preprocess
   (pps ppx_jane)))
 

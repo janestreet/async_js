@@ -74,76 +74,76 @@ let request
     req##setRequestHeader (Js.string name) (Js.string value));
   let response : resp Response.t Or_error.t Ivar.t = Ivar.create () in
   req##.onerror
-    := Dom.handler (fun _ ->
-         Ivar.fill_if_empty response (Or_error.error_string "Network error");
-         Js._true);
+  := Dom.handler (fun _ ->
+       Ivar.fill_if_empty response (Or_error.error_string "Network error");
+       Js._true);
   req##.ontimeout
-    := Dom.handler (fun _ ->
-         Ivar.fill_if_empty response (Or_error.error_string "Timeout");
-         Js._true);
+  := Dom.handler (fun _ ->
+       Ivar.fill_if_empty response (Or_error.error_string "Timeout");
+       Js._true);
   req##.onreadystatechange
-    := Js.wrap_callback (fun _ ->
-         match req##.readyState with
-         | DONE ->
-           let res =
-             if req##.status >= 200 && req##.status < 300
-             then (
-               let%bind.Or_error content : resp Or_error.t =
-                 let get_text_contents_or_error () =
-                   Opt.case
-                     req##.responseText
-                     (fun () ->
-                       (* This case should not be entered as per the specification of
+  := Js.wrap_callback (fun _ ->
+       match req##.readyState with
+       | DONE ->
+         let res =
+           if req##.status >= 200 && req##.status < 300
+           then (
+             let%bind.Or_error content : resp Or_error.t =
+               let get_text_contents_or_error () =
+                 Opt.case
+                   req##.responseText
+                   (fun () ->
+                     (* This case should not be entered as per the specification of
                       XMLHttpRequest at MDN web docs, because if a request is successful,
                       in state [DONE] and response_type [Text] or [Default],
                       [responseText] should not be [null].
                       See https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseText
-                   *)
-                       error_s
-                         [%sexp
-                           "No response returned despite successful request"
-                           , { code = (req##.status : int)
-                             ; status_text = (Js.to_string req##.statusText : string)
-                             }])
-                     Result.return
-                 in
-                 let open Response_type in
-                 match response_type with
-                 | ArrayBuffer -> Ok (File.CoerceTo.arrayBuffer req##.response)
-                 | Blob -> Ok (File.CoerceTo.blob req##.response)
-                 | Document -> Ok (File.CoerceTo.document req##.response)
-                 | JSON -> Ok (File.CoerceTo.json req##.response)
-                 | Text -> get_text_contents_or_error ()
-                 | Default -> Or_error.map (get_text_contents_or_error ()) ~f:Js.to_string
+                     *)
+                     error_s
+                       [%sexp
+                         "No response returned despite successful request"
+                         , { code = (req##.status : int)
+                           ; status_text = (Js.to_string req##.statusText : string)
+                           }])
+                   Result.return
                in
-               let get_header s =
-                 Opt.case
-                   (req##getResponseHeader (Js.bytestring s))
-                   (fun () -> None)
-                   (fun v -> Some (Js.to_string v))
-               in
-               Ok { Response.content; code = req##.status; get_header })
-             else
-               Or_error.error_s
-                 [%sexp
-                   "Request failed"
-                   , { code = (req##.status : int)
-                     ; status_text = (Js.to_string req##.statusText : string)
-                     }]
-           in
-           Ivar.fill_if_empty response res
-         | _ -> ());
+               let open Response_type in
+               match response_type with
+               | ArrayBuffer -> Ok (File.CoerceTo.arrayBuffer req##.response)
+               | Blob -> Ok (File.CoerceTo.blob req##.response)
+               | Document -> Ok (File.CoerceTo.document req##.response)
+               | JSON -> Ok (File.CoerceTo.json req##.response)
+               | Text -> get_text_contents_or_error ()
+               | Default -> Or_error.map (get_text_contents_or_error ()) ~f:Js.to_string
+             in
+             let get_header s =
+               Opt.case
+                 (req##getResponseHeader (Js.bytestring s))
+                 (fun () -> None)
+                 (fun v -> Some (Js.to_string v))
+             in
+             Ok { Response.content; code = req##.status; get_header })
+           else
+             Or_error.error_s
+               [%sexp
+                 "Request failed"
+                 , { code = (req##.status : int)
+                   ; status_text = (Js.to_string req##.statusText : string)
+                   }]
+         in
+         Ivar.fill_if_empty response res
+       | _ -> ());
   Option.iter on_progress ~f:(fun on_progress ->
     req##.onprogress
-      := Dom.handler (fun e ->
-           on_progress ~loaded:e##.loaded ~total:e##.total;
-           Js._true));
+    := Dom.handler (fun e ->
+         on_progress ~loaded:e##.loaded ~total:e##.total;
+         Js._true));
   Optdef.iter req##.upload (fun upload ->
     Option.iter on_upload_progress ~f:(fun on_upload_progress ->
       upload##.onprogress
-        := Dom.handler (fun e ->
-             on_upload_progress ~loaded:e##.loaded ~total:e##.total;
-             Js._true)));
+      := Dom.handler (fun e ->
+           on_upload_progress ~loaded:e##.loaded ~total:e##.total;
+           Js._true)));
   (match method_with_args with
    | Get _ -> req##send Js.null
    | Post body ->

@@ -22,7 +22,10 @@ let start_http_server () =
   let reader, writer = Pipe.create () in
   let implementations = [ implementation_send_string; implementation_close_connection ] in
   let implementations =
-    Rpc.Implementations.create_exn ~implementations ~on_unknown_rpc:`Raise
+    Rpc.Implementations.create_exn
+      ~implementations
+      ~on_unknown_rpc:`Raise
+      ~on_exception:Log_on_background_exn
   in
   let%bind server =
     let on_handler_error inet err =
@@ -161,7 +164,7 @@ let%expect_test _ =
     [%expect
       {|
       New connection
-      ((rpc_error (Connection_closed ("RPC transport stopped")))
+      ((rpc_error (Connection_closed ("EOF or connection closed")))
        (connection_description
         (websocket
          (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /%00)))))
@@ -179,7 +182,7 @@ let%expect_test _ =
     [%expect
       {|
       New connection
-      ((rpc_error (Connection_closed ("RPC transport stopped")))
+      ((rpc_error (Connection_closed ("EOF or connection closed")))
        (connection_description
         (websocket (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))
        (rpc_name send-string) (rpc_version 1))
@@ -189,7 +192,8 @@ let%expect_test _ =
     print_when_connection_established_exn conn ~f:(fun (_ : Rpc.Connection.t) ->
       return ());
     let%bind () = dispatch_and_print (sprintf "ws://localhost:%d/" web_port) in
-    [%expect {|
+    [%expect
+      {|
       New connection
       "OK from client"
       |}];

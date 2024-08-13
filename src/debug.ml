@@ -87,6 +87,6 @@ let%expect_test "no stack overflow" =
   let a = Array.init 10000 ~f:(fun i -> sprintf "f%d" i, i) in
   let sexp = [%sexp_of: (string * int) array] a in
   let x = any_of_sexp sexp in
-  printf "%d" (Js.Unsafe.coerce x)##.f999;
+  printf "%s" (Js.to_string (Js.Unsafe.coerce x)##.f999);
   [%expect {| 999 |}]
 ;;

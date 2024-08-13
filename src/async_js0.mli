@@ -15,6 +15,9 @@ val init : unit -> unit
 
 val initialized : unit -> bool
 
+(** Adds an exn handler which fires anytime an exn is raised to the dom via async. *)
+val add_on_unhandled_exn_handler : f:(exn -> unit) -> unit
+
 (**/**)
 
 val document_loaded : unit -> unit Deferred.t

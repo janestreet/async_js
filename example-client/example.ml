@@ -34,12 +34,12 @@ let style props =
 let event_reader, event_writer = Pipe.create ()
 
 module Event = Vdom.Effect.Define (struct
-  module Action = struct
-    type t = update
-  end
+    module Action = struct
+      type t = update
+    end
 
-  let handle = Pipe.write_without_pushback event_writer
-end)
+    let handle = Pipe.write_without_pushback event_writer
+  end)
 
 let inject = Event.inject
 
@@ -77,10 +77,10 @@ let update u state =
     Option.iter
       (Dom_html.getElementById_coerce "entry" Dom_html.CoerceTo.input)
       ~f:(fun input ->
-      let value = Js.to_string input##.value in
-      don't_wait_for
-        (set ~key:state.key ~value
-         >>| fun () -> Pipe.write_without_pushback event_writer (New_value value)));
+        let value = Js.to_string input##.value in
+        don't_wait_for
+          (set ~key:state.key ~value
+           >>| fun () -> Pipe.write_without_pushback event_writer (New_value value)));
     state
 ;;
 
