@@ -2,7 +2,11 @@ open! Core
 open Async_kernel
 
 module Rpc : sig
-  include Async_rpc_kernel.Persistent_connection.S with type conn = Rpc.Connection.t
+  include
+    Async_rpc_kernel.Persistent_connection.S
+    with type conn = Rpc.Connection.t
+     and type t =
+      Persistent_connection_kernel.Make(Async_rpc_kernel.Persistent_connection.Rpc_conn).t
 
   type 'a create :=
     server_name:string
@@ -21,3 +25,7 @@ end
 module Versioned_rpc :
   Async_rpc_kernel.Persistent_connection.S
   with type conn = Async_rpc_kernel.Versioned_rpc.Connection_with_menu.t
+   and type t =
+    Persistent_connection_kernel.Make
+      (Async_rpc_kernel.Persistent_connection.Versioned_rpc_conn)
+    .t
