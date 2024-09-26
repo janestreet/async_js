@@ -5,7 +5,10 @@ module Expect_test_config = struct
 
   external loop_while : (unit -> bool Js.t) Js.callback -> unit = "loop_while"
 
-  let is_in_browser = Js.Optdef.test (Obj.magic Dom_html.document : _ Js.Optdef.t)
+  let is_in_node =
+    let process = Js.Unsafe.get Js.Unsafe.global (Js.string "process") in
+    Js.Optdef.test (process : _ Js.Optdef.t)
+  ;;
 
   external await_internal
     :  ((Js.Unsafe.any -> unit) -> unit) Js.callback
@@ -21,13 +24,8 @@ module Expect_test_config = struct
   ;;
 
   let run =
-    if is_in_browser
-    then (fun f ->
-      Async_js.init ();
-      don't_wait_for
-        (let%map.Deferred () = f () in
-         Bonsai_test_handle_garbage_collector.garbage_collect ()))
-    else (
+    if is_in_node
+    then (
       match Sys.backend_type with
       | Other "wasm_of_ocaml" when await_is_available () ->
         fun f ->
@@ -57,6 +55,12 @@ module Expect_test_config = struct
            | Some (Ok result) -> result
            | Some (Error exn) -> raise exn
            | None -> assert false))
+    else
+      fun f ->
+      Async_js.init ();
+      don't_wait_for
+        (let%map.Deferred () = f () in
+         Bonsai_test_handle_garbage_collector.garbage_collect ())
   ;;
 
   let sanitize s = s
