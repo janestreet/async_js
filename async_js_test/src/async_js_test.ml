@@ -5,35 +5,33 @@ module Expect_test_config = struct
 
   external loop_while : (unit -> bool Js.t) Js.callback -> unit = "loop_while"
 
-  let is_in_browser = Js.Optdef.test (Obj.magic Dom_html.document : _ Js.Optdef.t)
+  let is_in_node =
+    let process = Js.Unsafe.get Js.Unsafe.global (Js.string "process") in
+    Js.Optdef.test (process : _ Js.Optdef.t)
+  ;;
 
-  external await_internal
+  external suspend_internal
     :  ((Js.Unsafe.any -> unit) -> unit) Js.callback
     -> 'a
-    = "caml_wasm_await"
+    = "caml_wasm_suspend"
 
-  external await_is_available : unit -> bool = "caml_wasm_await_available"
+  external suspend_is_available : unit -> bool = "caml_wasm_suspend_available"
 
-  let await (type a) (f : (a -> unit) -> unit) : a =
-    await_internal
+  let suspend (type a) (f : (a -> unit) -> unit) : a =
+    suspend_internal
       (Js.Unsafe.callback_with_arity 1 (fun resolve ->
          f (fun x -> Js.Unsafe.fun_call resolve [| Js.Unsafe.inject x |])))
   ;;
 
   let run =
-    if is_in_browser
-    then (fun f ->
-      Async_js.init ();
-      don't_wait_for
-        (let%map.Deferred () = f () in
-         Bonsai_test_handle_garbage_collector.garbage_collect ()))
-    else (
+    if is_in_node
+    then (
       match Sys.backend_type with
-      | Other "wasm_of_ocaml" when await_is_available () ->
+      | Other "wasm_of_ocaml" when suspend_is_available () ->
         fun f ->
           Async_js.init ();
           let x =
-            await
+            suspend
             @@ fun cont ->
             ignore
               (let%bind x = Monitor.try_with f in
@@ -57,6 +55,12 @@ module Expect_test_config = struct
            | Some (Ok result) -> result
            | Some (Error exn) -> raise exn
            | None -> assert false))
+    else
+      fun f ->
+      Async_js.init ();
+      don't_wait_for
+        (let%map.Deferred () = f () in
+         Bonsai_test_handle_garbage_collector.garbage_collect ())
   ;;
 
   let sanitize s = s

@@ -5,13 +5,11 @@
    (import "env" "caml_js_meth_call"
       (func $caml_js_meth_call
          (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
-   (import "js" "caml_wasm_await"
-      (func $await (param externref anyref) (result eqref)))
-   (import "js" "caml_wasm_await_available"
-      (func $await_available (param (ref eq)) (result (ref eq))))
+   (import "bindings" "suspend_fiber"
+      (func $suspend (param anyref) (result (ref eq))))
+   (import "js" "caml_wasm_suspend_available"
+      (func $suspend_available (param (ref eq)) (result (ref eq))))
    (import "env" "unwrap" (func $unwrap (param (ref eq)) (result anyref)))
-   (import "env" "current_suspender"
-      (global $current_suspender (mut externref)))
 
    (global $deasync (mut eqref) (ref.null eq))
 
@@ -35,10 +33,8 @@
             (array.new_fixed $block 2 (ref.i31 (i32.const 0)) (local.get $f))))
       (ref.i31 (i32.const 0)))
 
-   (func (export "caml_wasm_await") (param $f (ref eq)) (result (ref eq))
-      (ref.as_non_null
-         (call $await (global.get $current_suspender)
-            (call $unwrap (local.get $f)))))
+   (func (export "caml_wasm_suspend") (param $f (ref eq)) (result (ref eq))
+      (call $suspend (call $unwrap (local.get $f))))
 
-   (export "caml_wasm_await_available" (func $await_available))
+   (export "caml_wasm_suspend_available" (func $suspend_available))
 )

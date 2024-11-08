@@ -243,6 +243,7 @@ module Websocket_connection = struct
     in
     let make_connection transport =
       let create (T.Client_implementations.T { connection_state; implementations }) =
+        let always_provide_rpc_shapes = true in
         T.create
           transport
           ?handshake_timeout
@@ -250,6 +251,7 @@ module Websocket_connection = struct
           ~description
           ~implementations
           ~connection_state
+          ~provide_rpc_shapes:always_provide_rpc_shapes
       in
       match implementations with
       | None -> create (T.Client_implementations.null ())
