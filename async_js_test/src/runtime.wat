@@ -6,7 +6,7 @@
       (func $caml_js_meth_call
          (param (ref eq)) (param (ref eq)) (param (ref eq)) (result (ref eq))))
    (import "js" "caml_wasm_await"
-      (func $await (param externref anyref) (result eqref)))
+      (func $await (param anyref) (result (ref eq))))
    (import "js" "caml_wasm_await_available"
       (func $await_available (param (ref eq)) (result (ref eq))))
    (import "env" "unwrap" (func $unwrap (param (ref eq)) (result anyref)))
@@ -36,9 +36,7 @@
       (ref.i31 (i32.const 0)))
 
    (func (export "caml_wasm_await") (param $f (ref eq)) (result (ref eq))
-      (ref.as_non_null
-         (call $await (global.get $current_suspender)
-            (call $unwrap (local.get $f)))))
+      (call $await (call $unwrap (local.get $f))))
 
    (export "caml_wasm_await_available" (func $await_available))
 )
