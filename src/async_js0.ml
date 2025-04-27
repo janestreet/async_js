@@ -29,25 +29,25 @@ let pretty_print_exception name exn =
        | None -> `Exn exn
        | Some err -> `Js_and_exn (exn, err))
   in
-  match !Backtrace.elide, classification with
+  match Dynamic.get Backtrace.elide, classification with
   | true, _ ->
-    Firebug.console##error_2 (Js.string name) (Js.string "<STACK TRACE ELIDED>")
-  | false, `Js err -> Firebug.console##error_2 (Js.string name) err
+    Console.console##error_2 (Js.string name) (Js.string "<STACK TRACE ELIDED>")
+  | false, `Js err -> Console.console##error_2 (Js.string name) err
   | false, `Exn exn ->
-    Firebug.console##error_2 (Js.string name) (Js.string (Exn.to_string exn))
+    Console.console##error_2 (Js.string name) (Js.string (Exn.to_string exn))
   | false, `Js_and_exn (exn, (messages, err)) ->
     (match messages with
-     | [] -> Firebug.console##group (Js.string name)
+     | [] -> Console.console##group (Js.string name)
      | hd :: rest ->
-       Firebug.console##group (Js.string hd);
-       Firebug.console##log (Js.string name);
-       List.iter rest ~f:(fun message -> Firebug.console##error (Js.string message)));
+       Console.console##group (Js.string hd);
+       Console.console##log (Js.string name);
+       List.iter rest ~f:(fun message -> Console.console##error (Js.string message)));
     (* We first output the stringified ocaml exception *)
-    Firebug.console##groupCollapsed (Js.string "OCaml Exception");
-    Firebug.console##log (Js.string (Exn.to_string exn));
-    Firebug.console##groupEnd;
-    Firebug.console##error err;
-    Firebug.console##groupEnd
+    Console.console##groupCollapsed (Js.string "OCaml Exception");
+    Console.console##log (Js.string (Exn.to_string exn));
+    Console.console##groupEnd;
+    Console.console##error err;
+    Console.console##groupEnd
 ;;
 
 let run =

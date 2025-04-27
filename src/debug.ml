@@ -44,8 +44,8 @@ let rec any_of_sexp = function
           |> Array.of_list))
 ;;
 
-let log_s sexp = Firebug.console##log (any_of_sexp sexp)
-let log_s_as_string sexp = Firebug.console##log (Js.string (Sexp.to_string_hum sexp))
+let log_s sexp = Console.console##log (any_of_sexp sexp)
+let log_s_as_string sexp = Console.console##log (Js.string (Sexp.to_string_hum sexp))
 
 let%expect_test _ =
   let module M = struct

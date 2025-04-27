@@ -186,7 +186,11 @@ module Websocket_connection = struct
          context *)
       websocket##.onerror
       := Dom.handler (fun (_ : _ Dom.event Js.t) ->
-           Async_js_debug.log_s [%message "websocket encountered unexpected error"];
+           Async_js_debug.log_s
+             [%message
+               "WebSocket encountered an unexpected error. Unfortunately, the browser \
+                doesn't provide any information about the error. There might be more \
+                information in the DevTools network tab."];
            Js._false);
       websocket##.onmessage := Dom.handler onmessage;
       websocket##.onclose := Dom.handler onclose;
