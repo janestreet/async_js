@@ -1,0 +1,2 @@
+module Test_async_js = Test_async_js
+module Test_double_yield_regression = Test_double_yield_regression

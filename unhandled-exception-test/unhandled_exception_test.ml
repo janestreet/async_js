@@ -1,7 +1,7 @@
 open! Core
 open Async_kernel
 
-let () = Backtrace.elide := true
+let () = Dynamic.set_root Backtrace.elide true
 
 let () =
   Async_js.add_on_unhandled_exn_handler ~f:(fun _ -> print_endline "Handled the error.")

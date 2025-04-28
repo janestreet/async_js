@@ -12,9 +12,7 @@
    (import "js" "caml_wasm_suspend_available"
       (func $suspend_available (param (ref eq)) (result (ref eq))))
    (import "env" "unwrap" (func $unwrap (param (ref eq)) (result anyref)))
-
    (global $deasync (mut eqref) (ref.null eq))
-
    (type $block (array (mut (ref eq))))
    (type $string (array (mut i8)))
 
@@ -39,9 +37,6 @@
             (array.new_data $string $loopWhile (i32.const 0) (i32.const 9))
             (array.new_fixed $block 2 (ref.i31 (i32.const 0)) (local.get $f))))
       (ref.i31 (i32.const 0)))
-
    (func (export "caml_wasm_suspend") (param $f (ref eq)) (result (ref eq))
       (call $suspend (call $unwrap (local.get $f))))
-
-   (export "caml_wasm_suspend_available" (func $suspend_available))
-)
+   (export "caml_wasm_suspend_available" (func $suspend_available)))

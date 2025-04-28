@@ -2,7 +2,6 @@ open Core
 open Async_kernel
 open Js_of_ocaml
 module Opt = Js.Opt
-module Optdef = Js.Optdef
 
 module Response_type = struct
   type 'a t = 'a XmlHttpRequest.response =
@@ -138,12 +137,11 @@ let request
     := Dom.handler (fun e ->
          on_progress ~loaded:e##.loaded ~total:e##.total;
          Js._true));
-  Optdef.iter req##.upload (fun upload ->
-    Option.iter on_upload_progress ~f:(fun on_upload_progress ->
-      upload##.onprogress
-      := Dom.handler (fun e ->
-           on_upload_progress ~loaded:e##.loaded ~total:e##.total;
-           Js._true)));
+  Option.iter on_upload_progress ~f:(fun on_upload_progress ->
+    req##.upload##.onprogress
+    := Dom.handler (fun e ->
+      on_upload_progress ~loaded:e##.loaded ~total:e##.total;
+      Js._true));
   (match method_with_args with
    | Get _ -> req##send Js.null
    | Post body ->
