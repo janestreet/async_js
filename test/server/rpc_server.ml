@@ -172,7 +172,12 @@ let%expect_test _ =
     [%expect
       {|
       New connection
-      ((rpc_error (Connection_closed ("EOF or connection closed")))
+      ((rpc_error
+        (Connection_closed
+         (("EOF or connection closed"
+           (connection_description
+            (websocket
+             (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /%00)))))))))
        (connection_description
         (websocket
          (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /%00)))))
@@ -192,7 +197,12 @@ let%expect_test _ =
     [%expect
       {|
       New connection
-      ((rpc_error (Connection_closed ("EOF or connection closed")))
+      ((rpc_error
+        (Connection_closed
+         (("EOF or connection closed"
+           (connection_description
+            (websocket
+             (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))))))
        (connection_description
         (websocket (uri ((scheme (ws)) (host (localhost)) (port PORT) (path /)))))
        (rpc_name send-string) (rpc_version 1))
