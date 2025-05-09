@@ -151,7 +151,11 @@ let initialization =
      initialized_ref := true;
      Scheduler.set_job_queued_hook t (fun _ -> run ());
      Scheduler.set_event_added_hook t (fun _ -> run ());
-     Scheduler.set_thread_safe_external_job_hook t run;
+     (* We can magic portable the job hook because it will only be used in js, which
+       doesn't use multiple domains *)
+     Scheduler.set_thread_safe_external_job_hook
+       t
+       (run |> Basement.Stdlib_shim.Obj.magic_portable);
      Async_kernel.Monitor.Expert.try_with_log_exn
      := pretty_print_exception "Async_kernel: Monitor.try_with";
      Async_kernel.Monitor.detach_and_iter_errors Async_kernel.Monitor.main ~f:(fun exn ->
