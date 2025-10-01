@@ -17,6 +17,7 @@ module Websocket_connection = struct
     -> ?handshake_timeout:Time_ns.Span.t
     -> ?heartbeat_config:T.Heartbeat_config.t
     -> ?description:Info.t
+    -> ?identification:Bigstring.t
     -> ?implementations:T.Client_implementations.t
     -> 'rest
 
@@ -233,11 +234,23 @@ module Websocket_connection = struct
     Uri.make ~scheme ~host ~port ()
   ;;
 
+  let default_heartbeat_config =
+    (* Even though we expect the server to be heartbeating regularly, we have to set a long
+     timeout here to prevent RPC timeouts in backgrounded tabs. When a throttled tab gets
+     scheduled, the code to check for timeouts runs before the code to process incoming
+     heartbeats, and it will otherwise think the server hasn't been heartbeating when in
+     fact it just hasn't processed them yet. *)
+    Async_rpc_kernel.Rpc.Connection.Heartbeat_config.create
+      ~timeout:(Time_ns.Span.of_int_min 5)
+      ()
+  ;;
+
   let client
     ?(uri = default_uri ())
     ?handshake_timeout
-    ?heartbeat_config
+    ?(heartbeat_config = default_heartbeat_config)
     ?description
+    ?identification
     ?implementations
     ()
     =
@@ -251,7 +264,8 @@ module Websocket_connection = struct
         T.create
           transport
           ?handshake_timeout
-          ?heartbeat_config
+          ~heartbeat_config
+          ?identification
           ~description
           ~implementations
           ~connection_state
@@ -286,10 +300,18 @@ module Websocket_connection = struct
     ?handshake_timeout
     ?heartbeat_config
     ?description
+    ?identification
     ?implementations
     ()
     =
-    client ?uri ?handshake_timeout ?heartbeat_config ?description ?implementations ()
+    client
+      ?uri
+      ?handshake_timeout
+      ?heartbeat_config
+      ?description
+      ?identification
+      ?implementations
+      ()
     >>| Or_error.ok_exn
   ;;
 end
