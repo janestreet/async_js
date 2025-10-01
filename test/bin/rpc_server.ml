@@ -39,6 +39,7 @@ let start_http_server ~http_settings () =
       ~assets
   in
   Simple_web_server.create
+    ~gzip_behavior:`On_every_request
     ~should_log_hosting_url:true
     ~authorize:Krb_http.Authorize.accept_all
     ~rpc_config:

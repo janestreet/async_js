@@ -38,7 +38,7 @@ module Event = Vdom.Effect.Define (struct
       type t = update
     end
 
-    let handle = Pipe.write_without_pushback event_writer
+    let handle value ~on_exn:_ = Pipe.write_without_pushback event_writer value
   end)
 
 let inject = Event.inject

@@ -17,6 +17,7 @@ module Connection : sig
     -> ?handshake_timeout:Time_ns.Span.t
     -> ?heartbeat_config:Heartbeat_config.t
     -> ?description:Info.t
+    -> ?identification:Bigstring.t
     -> ?implementations:Client_implementations.t
     -> 'rest
 
