@@ -1,6 +1,6 @@
 (library
  (name async_js_test_test)
- (libraries js_of_ocaml async_rpc_kernel async_js_test async_js async_kernel
-   core)
+ (libraries async_js async_js_test async_kernel async_rpc_kernel core
+   js_of_ocaml)
  (preprocess
   (pps ppx_jane)))

@@ -1,5 +1,5 @@
 (library
  (name bonsai_test_handle_garbage_collector_test)
- (libraries core bonsai_test_handle_garbage_collector)
+ (libraries bonsai_test_handle_garbage_collector core)
  (preprocess
   (pps ppx_jane)))
