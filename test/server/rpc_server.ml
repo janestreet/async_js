@@ -162,8 +162,8 @@ let%expect_test _ =
     (* synchronous failure (invalid url) *)
     let%bind.Deferred () = dispatch_and_print "ws://in valid/" in
     [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
-    (* null-byte at the end of a URL looks like it gets stripped now?
-       This used to fail but now it's ok *)
+    (* null-byte at the end of a URL looks like it gets stripped now? This used to fail
+       but now it's ok *)
     let conn = read_new connection_pipe in
     print_when_connection_established_exn conn ~f:Rpc.Connection.close;
     let%bind.Deferred () =

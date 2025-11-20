@@ -93,10 +93,10 @@ let request
                    req##.responseText
                    (fun () ->
                      (* This case should not be entered as per the specification of
-                      XMLHttpRequest at MDN web docs, because if a request is successful,
-                      in state [DONE] and response_type [Text] or [Default],
-                      [responseText] should not be [null].
-                      See https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseText
+                        XMLHttpRequest at MDN web docs, because if a request is
+                        successful, in state [DONE] and response_type [Text] or [Default],
+                        [responseText] should not be [null]. See
+                        https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseText
                      *)
                      error_s
                        [%sexp
