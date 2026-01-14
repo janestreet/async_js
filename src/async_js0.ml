@@ -152,7 +152,7 @@ let initialization =
      Scheduler.set_job_queued_hook t (fun _ -> run ());
      Scheduler.set_event_added_hook t (fun _ -> run ());
      (* We can magic portable the job hook because it will only be used in js, which
-       doesn't use multiple domains *)
+        doesn't use multiple domains *)
      Scheduler.set_thread_safe_external_job_hook
        t
        (run |> Basement.Stdlib_shim.Obj.magic_portable);
