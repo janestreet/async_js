@@ -97,9 +97,9 @@ let run =
              (* Hack to get a better backtrace *)
              pretty_print_exception "Error:" exn;
              (* And then raise the embedded javascript error that provides a proper
-                backtrace with good sourcemap support.
-                The name of this javascript error is probably not meaningful which is why
-                we first output the serialization of ocaml exception. *)
+                backtrace with good sourcemap support. The name of this javascript error
+                is probably not meaningful which is why we first output the serialization
+                of ocaml exception. *)
              Js_error.raise_ err));
       (match next_wakeup with
        | No_wakeup -> state := Idle
@@ -113,7 +113,7 @@ let run =
            Stack.push timeouts at;
            run_after ~f:run_timeout ~ms:d_ms))
   and run_timeout () =
-    (* Each call to [run_timeout] removes exactly one element from [timeouts].  This
+    (* Each call to [run_timeout] removes exactly one element from [timeouts]. This
        maintains the invariant that [Stack.length timeouts] is exactly the number of
        outstanding timeouts we have registered. *)
     ignore (Stack.pop_exn timeouts : Time_ns.t);
@@ -152,7 +152,7 @@ let initialization =
      Scheduler.set_job_queued_hook t (fun _ -> run ());
      Scheduler.set_event_added_hook t (fun _ -> run ());
      (* We can magic portable the job hook because it will only be used in js, which
-       doesn't use multiple domains *)
+        doesn't use multiple domains *)
      Scheduler.set_thread_safe_external_job_hook
        t
        (run |> Basement.Stdlib_shim.Obj.magic_portable);

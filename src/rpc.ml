@@ -123,8 +123,8 @@ module Websocket_connection = struct
     match new%js WebSockets.webSocket (Js.string (Uri.to_string url)) with
     | exception Js_error.Exn exn ->
       (* e.g. SECURITY_ERR, though note that e.g. connecting to ws:// from a https:// page
-         in chrome seems to manifest as successful construction but immediate closure
-         (see below).  *)
+         in chrome seems to manifest as successful construction but immediate closure (see
+         below). *)
       return (Or_error.error_string (Js_error.message exn))
     | exception exn -> return (Or_error.of_exn exn)
     | websocket ->
@@ -182,7 +182,7 @@ module Websocket_connection = struct
       (* Upon an error, [onerror] fires and then [onclose] fires (it's possible for a
          graceful closure to call [onclose] only). Since Async_RPC has no notion of
          graceful closure, we only need to handle [onclose] anyway. Further, the event
-         passed to [onerror] contains no extra information about the error.  Note that we
+         passed to [onerror] contains no extra information about the error. Note that we
          still listen to [onerror] to prevent the error from leaking to uncontrolled
          context *)
       websocket##.onerror
@@ -235,11 +235,11 @@ module Websocket_connection = struct
   ;;
 
   let default_heartbeat_config =
-    (* Even though we expect the server to be heartbeating regularly, we have to set a long
-     timeout here to prevent RPC timeouts in backgrounded tabs. When a throttled tab gets
-     scheduled, the code to check for timeouts runs before the code to process incoming
-     heartbeats, and it will otherwise think the server hasn't been heartbeating when in
-     fact it just hasn't processed them yet. *)
+    (* Even though we expect the server to be heartbeating regularly, we have to set a
+       long timeout here to prevent RPC timeouts in backgrounded tabs. When a throttled
+       tab gets scheduled, the code to check for timeouts runs before the code to process
+       incoming heartbeats, and it will otherwise think the server hasn't been
+       heartbeating when in fact it just hasn't processed them yet. *)
     Async_rpc_kernel.Rpc.Connection.Heartbeat_config.create
       ~timeout:(Time_ns.Span.of_int_min 5)
       ()

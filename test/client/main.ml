@@ -28,7 +28,7 @@ let wrap_callback f =
     (match get_output () with
      | "" -> ()
      | s -> print_endline s);
-    (* Wrap the deferred into a Promise to allow devtools to wait on it  *)
+    (* Wrap the deferred into a Promise to allow devtools to wait on it *)
     promise_of_deferred
       (let%map sexp =
          match%map
@@ -78,7 +78,8 @@ let () =
               Js._false))
            Js._false
        in
-       (* We export a javascript callback that will then be triggered from the server side. *)
+       (* We export a javascript callback that will then be triggered from the server
+          side. *)
        Js.export
          Async_js_test_lib.Callback_function.(name (Open_rpc_and_wait ()))
          (wrap_callback (fun arguments ->
@@ -91,7 +92,8 @@ let () =
             (* Wait a bit so that the connection is not immediately closed *)
             let%bind.Deferred () = Clock_ns.after (Time_ns.Span.of_sec 1.0) in
             Deferred.Or_error.return [%sexp "OK from client"]));
-       (* The server side will wait for the text 'Ready' to appear and only then start the testing. *)
+       (* The server side will wait for the text 'Ready' to appear and only then start the
+          testing. *)
        Dom_html.document##.body##.textContent := Js.Opt.return (Js.string "Ready");
        Js._true)
 ;;

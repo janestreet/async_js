@@ -4,13 +4,13 @@ open! Cohttp_jane
 
 let implementation_send_string =
   Rpc.Rpc.implement' Async_js_test_lib.Rpcs.send_string (fun (_ : Rpc.Connection.t) str ->
-    [%log.global.debug "Got request for send_string: " ~_:str];
+    [%log.debug "Got request for send_string: " ~_:str];
     str)
 ;;
 
 let implementation_close_connection =
   Rpc.Rpc.implement' Async_js_test_lib.Rpcs.close_connection (fun conn () ->
-    [%log.global.debug "Got request for close_connection"];
+    [%log.debug "Got request for close_connection"];
     don't_wait_for
       (let%bind () = Clock.after Time_float.Span.second in
        Rpc.Connection.close
@@ -29,7 +29,7 @@ let start_http_server () =
   in
   let%bind server =
     let on_handler_error inet err =
-      [%log.global.error "Error encountered" (inet : Socket.Address.Inet.t) (err : Exn.t)]
+      [%log.error "Error encountered" (inet : Socket.Address.Inet.t) (err : Exn.t)]
     in
     let http_handler =
       let open Cohttp_static_handler in
@@ -162,8 +162,8 @@ let%expect_test _ =
     (* synchronous failure (invalid url) *)
     let%bind.Deferred () = dispatch_and_print "ws://in valid/" in
     [%expect {| "WebSocket connection failed (Abnormal_closure)" |}];
-    (* null-byte at the end of a URL looks like it gets stripped now?
-       This used to fail but now it's ok *)
+    (* null-byte at the end of a URL looks like it gets stripped now? This used to fail
+       but now it's ok *)
     let conn = read_new connection_pipe in
     print_when_connection_established_exn conn ~f:Rpc.Connection.close;
     let%bind.Deferred () =
