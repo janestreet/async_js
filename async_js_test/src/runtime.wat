@@ -30,7 +30,7 @@
                   (array.new_fixed $block 2 (ref.i31 (i32.const 0))
                      (call $caml_jsstring_of_string
                         (array.new_data $string $deasync
-                           (i32.const 0) (i32.const 7))))))))
+                           (i32.const 0) (i32.const 94))))))))
       (drop
          (call $caml_js_meth_call
             (ref.as_non_null (global.get $deasync))

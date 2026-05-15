@@ -16,19 +16,19 @@ module Websocket_connection = struct
     ?uri:Uri.t
     -> ?handshake_timeout:Time_ns.Span.t
     -> ?heartbeat_config:T.Heartbeat_config.t
-    -> ?description:Info.t
+    -> ?description:Info.Portable.t
     -> ?identification:Bigstring.t
     -> ?implementations:T.Client_implementations.t
     -> 'rest
 
   module Close_code : sig
-    type t [@@deriving sexp]
+    type t [@@deriving sexp, equal]
 
     val to_int : t -> int
     val of_event : _ WebSockets.closeEvent Js.t -> t
     val normal_closure : t
   end = struct
-    type close_event_code = int [@@deriving compare, sexp]
+    type close_event_code = int [@@deriving compare, sexp, equal]
 
     let all_of_close_event_code = []
 
@@ -50,7 +50,27 @@ module Websocket_connection = struct
       | TLS_handshake
       | Unknown_close_event_code of close_event_code
       | Invalid_close_event_code of close_event_code
-    [@@deriving compare, enumerate, sexp]
+    [@@deriving compare, enumerate, sexp, equal]
+
+    let to_int = function
+      | Normal_closure -> 1000
+      | Going_away -> 1001
+      | Protocol_error -> 1002
+      | Unsupported_data -> 1003
+      | No_status_Received -> 1005
+      | Abnormal_closure -> 1006
+      | Invalid_frame_payload_data -> 1007
+      | Policy_violation -> 1008
+      | Message_too_big -> 1009
+      | Missing_extension -> 1010
+      | Internal_error -> 1011
+      | Service_restart -> 1012
+      | Try_again_later -> 1013
+      | Bad_gateway -> 1014
+      | TLS_handshake -> 1015
+      | Unknown_close_event_code code -> code
+      | Invalid_close_event_code code -> code
+    ;;
 
     let normal_closure = Normal_closure
 
@@ -77,26 +97,6 @@ module Websocket_connection = struct
     ;;
 
     let of_event close_event = of_int close_event##.code
-
-    let to_int = function
-      | Normal_closure -> 1000
-      | Going_away -> 1001
-      | Protocol_error -> 1002
-      | Unsupported_data -> 1003
-      | No_status_Received -> 1005
-      | Abnormal_closure -> 1006
-      | Invalid_frame_payload_data -> 1007
-      | Policy_violation -> 1008
-      | Message_too_big -> 1009
-      | Missing_extension -> 1010
-      | Internal_error -> 1011
-      | Service_restart -> 1012
-      | Try_again_later -> 1013
-      | Bad_gateway -> 1014
-      | TLS_handshake -> 1015
-      | Unknown_close_event_code code -> code
-      | Invalid_close_event_code code -> code
-    ;;
 
     let%test_unit "to_int -> of_int round-trip" =
       List.iter all ~f:(fun t -> assert ([%compare.equal: t] (of_int (to_int t)) t))
@@ -139,6 +139,8 @@ module Websocket_connection = struct
         close_websocket websocket (Error.to_string_hum reason)
       in
       let onclose (close_event : _ WebSockets.closeEvent Js.t) =
+        let close_code = Close_code.of_event close_event in
+        ();
         (* The RPC API doesn't give us a good place to put details about _why_ the
            connection closed.
 
@@ -152,10 +154,7 @@ module Websocket_connection = struct
             | false -> "connection failed"
             | true -> "closed"
           in
-          sprintf
-            !"WebSocket %s (%{sexp:Close_code.t})"
-            what_happened
-            (Close_code.of_event close_event)
+          sprintf !"WebSocket %s (%{sexp:Close_code.t})" what_happened close_code
         in
         cleanup ~reason:(Error.of_string reason);
         Js._false
@@ -255,8 +254,9 @@ module Websocket_connection = struct
     ()
     =
     let description =
-      Info.create_s
-        [%message "websocket" (description : (Info.t option[@sexp.option])) (uri : Uri.t)]
+      Info.Portable.create_s
+        [%message
+          "websocket" (description : (Info.Portable.t option[@sexp.option])) (uri : Uri.t)]
     in
     let make_connection transport =
       let create (T.Client_implementations.T { connection_state; implementations }) =
