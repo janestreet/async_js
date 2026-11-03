@@ -1,7 +1,7 @@
 (executables
- (modes byte exe)
  (names example)
  (libraries async_js async_kernel core virtual_dom.css_gen js_of_ocaml
    virtual_dom)
  (preprocess
-  (pps js_of_ocaml-ppx ppx_sexp_conv)))
+  (pps js_of_ocaml-ppx ppx_sexp_conv))
+ (modes js wasm byte exe))

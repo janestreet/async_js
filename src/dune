@@ -1,7 +1,15 @@
 (library
+ (foreign_stubs
+  (language c)
+  (names c_stubs))
  (name async_js)
  (public_name async_js)
  (libraries async_kernel async_rpc_kernel core js_of_ocaml
    async_kernel.persistent_connection_kernel uri uri-sexp)
+ (js_of_ocaml
+  (javascript_files ./runtime.js))
  (preprocess
-  (pps ppx_jane js_of_ocaml-ppx)))
+  (pps ppx_jane js_of_ocaml-ppx -compare-require-explicit-locality))
+ (wasm_of_ocaml
+  (javascript_files ./runtime.js)
+  (wasm_files runtime.wat)))

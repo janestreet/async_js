@@ -64,7 +64,7 @@ let view state =
               ]
             ()
         ; Node.button
-            ~attrs:[ Attr.on_click (fun _e -> inject Set_value) ]
+            ~attrs:[ Attr.on_click_js_of_ocaml (fun _e -> inject Set_value) ]
             [ Node.text "set the value" ]
         ]
     ]
@@ -87,13 +87,13 @@ let update u state =
 let run_app ~initial_state ~updates ~view =
   let state = ref initial_state in
   let vdom = ref (view initial_state) in
-  let elt = ref (Vdom.Node.to_dom !vdom) in
+  let elt = ref (Vdom.Node.to_dom_js_of_ocaml !vdom) in
   Dom_html.document##.body := (Js.Unsafe.coerce !elt : Dom_html.bodyElement Js.t);
   Pipe.iter updates ~f:(fun u ->
     state := update u !state;
     let new_vdom = view !state in
     let module Patch = Vdom.Node.Patch in
-    elt := Patch.apply (Patch.create ~previous:!vdom ~current:new_vdom) !elt;
+    elt := Patch.apply_js_of_ocaml (Patch.create ~previous:!vdom ~current:new_vdom) !elt;
     vdom := new_vdom;
     Deferred.unit)
   |> don't_wait_for
