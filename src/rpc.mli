@@ -10,16 +10,20 @@ module Connection : sig
     include Connection
   end
 
-  (** This type of client connects to the websocket at the root of some host and port,
-      i.e. [ws://<address>/]. *)
   type 'rest client_t =
     ?uri:Uri.t
     -> ?handshake_timeout:Time_ns.Span.t
+    -> ?time_source:Synchronous_time_source.t
     -> ?heartbeat_config:Heartbeat_config.t
+    -> ?heartbeat_timeout_style:Heartbeat_timeout_style.t
     -> ?description:Info.Portable.t
     -> ?identification:Bigstring.t
     -> ?implementations:Client_implementations.t
     -> 'rest
+  [@@ocaml.doc
+    {| This type of client connects to the websocket at the root of some host and port,
+        i.e. [ws://<address>/]. [handshake_timeout] bounds both the browser WebSocket open
+        and this module's own RPC handshake. |}]
 
   val client : (unit -> t Deferred.Or_error.t) client_t
   val client_exn : (unit -> t Deferred.t) client_t

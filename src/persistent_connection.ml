@@ -21,6 +21,9 @@ module Rpc = struct
     Persistent_connection.Rpc.create
       ~address:
         (module struct
+          (* The opam release of [uri] has no [Uri.equal__local], so we avoid generating
+             equal__local, as we don't actually need it. If this ever becomes an issue, we
+             can override the uri package in public-release. *)
           type t = Uri.t option [@@deriving equal, sexp]
         end)
   ;;

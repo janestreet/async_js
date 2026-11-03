@@ -50,6 +50,16 @@ let pretty_print_exception name exn =
     Console.console##groupEnd
 ;;
 
+(* Detects if WASM JSPI/Stack Switching Suspend API is available. *)
+external suspend_is_available : unit -> bool = "caml_wasm_suspend_available"
+
+(* In a WASM JSPI suspend (as triggered in async_js_test), all js async callbacks need to
+   be wrapped, otherwise we will liekly get [SuspendError: trying to suspend JS frames] *)
+external promising_callback
+  :  (unit -> unit)
+  -> (unit -> unit) Js.callback
+  = "caml_promising_callback"
+
 let run =
   let module State = struct
     type t =
@@ -67,7 +77,14 @@ let run =
   in
   let state = ref State.Idle in
   let timeouts = Stack.create () in
-  let run_after ~f ~ms = ignore (Dom_html.setTimeout f ms : Dom_html.timeout_id_safe) in
+  let run_after ~f ~ms =
+    if suspend_is_available ()
+    then
+      ignore
+        (Dom_html.window##setTimeout (promising_callback f) (Js.float ms)
+         : Dom_html.timeout_id)
+    else ignore (Dom_html.setTimeout f ms : Dom_html.timeout_id_safe)
+  in
   let rec loop () =
     let t = Scheduler.t () in
     match !state, Scheduler.uncaught_exn t with
@@ -190,3 +207,7 @@ let document_loaded =
       add_event Dom_html.window Dom_html.Event.load (Dom.handler handler);
       Async_kernel.Ivar.read loaded)
 ;;
+
+module For_async_js_test = struct
+  let suspend_is_available () = suspend_is_available ()
+end

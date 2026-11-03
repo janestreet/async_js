@@ -21,3 +21,8 @@ val add_on_unhandled_exn_handler : f:(exn -> unit) -> unit
 (**/**)
 
 val document_loaded : unit -> unit Deferred.t
+
+module For_async_js_test : sig
+  (* Detects if WASM JSPI/Stack Switching Suspend API is available. *)
+  val suspend_is_available : unit -> bool
+end
